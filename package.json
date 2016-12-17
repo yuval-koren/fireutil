@@ -1,0 +1,11 @@
+{
+  "name": "atempt1",
+  "version": "1.0.0",
+  "description": "This is attempt 1 of doing a skeleton",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Yuval",
+  "license": "ISC"
+}
