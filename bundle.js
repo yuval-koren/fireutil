@@ -44,12 +44,11 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
 	__webpack_require__(1);
-
-	var text = __webpack_require__(5);
-
+	var greeter = __webpack_require__(5);
 	document.write("It works -> ");
-	document.write(text);
+	document.write(greeter.greet("yuval"));
 
 
 /***/ },
@@ -87,7 +86,7 @@
 
 
 	// module
-	exports.push([module.id, "body {\r\n    background: yellow;\r\n}\r\n\r\nh1 {\r\n    background: yellow;\r\n}", ""]);
+	exports.push([module.id, "body {\r\n    background: red;\r\n}\r\n", ""]);
 
 	// exports
 
@@ -404,7 +403,12 @@
 /* 5 */
 /***/ function(module, exports) {
 
-	module.exports = "It works from content.js";
+	"use strict";
+	function greet(name) {
+	    return 'Hello ' + name;
+	}
+	exports.greet = greet;
+
 
 /***/ }
 /******/ ]);
