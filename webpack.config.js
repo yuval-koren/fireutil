@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./app.ts",
+    entry: "./app.js",
     output: {
         path: __dirname,
         filename: "bundle.js"
@@ -14,9 +14,14 @@ module.exports = {
                 loader: "style!css" ,
                 exclude: /node_modules/
             },
-            {
-                test: /\.ts$/,
-                loader: 'ts-loader'
+//            {
+//                test: /\.ts$/,
+//                loader: 'ts-loader'
+//            },
+            { 
+                test: /\.js$/, 
+                exclude: /node_modules/, 
+                loader: "babel-loader" 
             }
         ]
     }
