@@ -5,7 +5,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import database from 'firebase';
-import update from 'immutability-helper'
+//import update from 'immutability-helper';
+import _ from 'lodash';
+import {Map, List} from 'immutable';
 
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
@@ -51,24 +53,40 @@ class FireBaseAware extends React.Component {
         };
 
         this.state = {
-            users: []
-        }
-
+            users: List([])
+        };
+      
         firebase.initializeApp(config);
         var db = firebase.database();
         db.ref('users').on('child_added', (data) => {   
-            let user = {};
-            user = data.val();
-            user.key = data.key;         
-            this.setState(update(this.state, {users: {$push: [user]}}));
+            let user = data.val();
+            user.key = data.key;      
+
+            let newUsers = this.state.users.push(Map(user));
+            this.setState({
+                users: newUsers
+            });
+        });
+
+        db.ref('users').on('child_changed', (data) => {
+            var changedIndex = this.state.users.findIndex((item)=>item.get('key')===data.key);
+            let user = data.val();
+            user.key = data.key;
+
+            let newUsers = this.state.users.setIn([changedIndex], Map(user));         
+            this.setState({
+                users: newUsers
+            });
         })
+
+
     }
 
     render() {
         return ( 
             <div>
                 {this.state.users.map((data) =>
-                    <div>{data.name}</div>
+                    <div>{data.get('name')}</div>
                 )}
                 {this.props.children}
             </div>

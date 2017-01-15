@@ -18,6 +18,8 @@
     "css-loader": "^0.26.1",
     "firebase": "^3.6.5",
     "immutability-helper": "^2.1.1",
+    "immutable": "^3.8.1",
+    "lodash": "^4.17.4",
     "style-loader": "^0.13.1",
     "typescript": "^2.1.4"
   },
