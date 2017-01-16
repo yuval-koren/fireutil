@@ -52,35 +52,64 @@ class FireBaseAware extends React.Component {
             messagingSenderId: "512733212020"
         };
 
-        this.state = {
-            users: List([])
-        };
+        this.state = { };
       
         firebase.initializeApp(config);
-        var db = firebase.database();
-        db.ref('users').on('child_added', (data) => {   
-            let user = data.val();
-            user.key = data.key;      
 
-            let newUsers = this.state.users.push(Map(user));
-            this.setState({
-                users: newUsers
-            });
-        });
-
-        db.ref('users').on('child_changed', (data) => {
-            var changedIndex = this.state.users.findIndex((item)=>item.get('key')===data.key);
-            let user = data.val();
-            user.key = data.key;
-
-            let newUsers = this.state.users.setIn([changedIndex], Map(user));         
-            this.setState({
-                users: newUsers
-            });
-        })
-
+        this.users = this.registerEntity(this.state, 'users');
 
     }
+
+
+    registerEntity(state, entityName) {
+        let db = firebase.database();
+
+        state[entityName] = List([]);
+
+        let keyIndex = [];
+        let result = {
+            saveEntity: function(entity) {
+                if (!entity.key) {
+                    var newKey = db.ref().child(entityName).push().key;
+                    entity = entity.setIn('key', newKey);
+                }
+                db.ref(entityName+'/' + entity.get('key')).set(entity.toJSON());
+            },
+            keyIndex: function(index) {
+                return keyIndex[index];
+            }
+        }
+
+        db.ref(entityName).on('child_added', (data) => {   
+            let entity = data.val();
+            entity.key = data.key;      
+
+            let newValue = this.state.users.push(Map(entity));
+            let newObject = {};
+            newObject[entityName] = newValue;
+            this.setState(newObject);
+
+            keyIndex[entity.key] = newValue;
+        });
+
+        db.ref(entityName).on('child_changed', (data) => {
+            var changedIndex = this.state[entityName].findIndex((entity)=>entity.get('key')===data.key);
+            let entity = data.val();
+            entity.key = data.key;
+
+            let newValue = this.state[entityName].setIn([changedIndex], Map(entity));         
+            let newObject = {};
+            newObject[entityName] = newValue;
+            this.setState(newObject);
+            
+            keyIndex[entity.key] = newValue;
+
+        });
+
+        return result;
+    }
+
+
 
     render() {
         return ( 
@@ -88,6 +117,7 @@ class FireBaseAware extends React.Component {
                 {this.state.users.map((data) =>
                     <div>{data.get('name')}</div>
                 )}
+                <button onClick={this.users.saveEntity}>save me</button>      
                 {this.props.children}
             </div>
         );
