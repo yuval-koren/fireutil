@@ -40,6 +40,88 @@ class MyComponent extends React.Component {
 }
 
 
+
+class Field extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            edit: this.props.initInEdit,
+            value: props.entity.get(props.item)
+        }
+
+        this.changeStateToEditMode = this.changeStateToEditMode.bind(this);
+        this.changeStateToReadMode = this.changeStateToReadMode.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
+    }
+
+    changeStateToEditMode() {
+        if (!this.props.editable) {return; }
+        this.setState({edit: true});
+    }
+
+    changeStateToReadMode() {
+        
+        this.setState({edit: false});
+    }
+
+    handleKeyUp(event) {
+        if (event.keyCode == 13) {
+            if (this.state.edit) {
+                this.handleSubmit();
+            } else {
+                this.changeStateToEditMode();
+            }
+        }
+    }
+
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
+
+    handleSubmit() {
+        this.changeStateToReadMode();
+        let newValue = this.props.entity.set(this.props.item, this.state.value);
+        this.props.saveFunc(newValue);
+    }
+
+    render() {
+        if (!this.state.edit) {
+            return (
+                <div tabIndex='0'
+                    onClick={this.changeStateToEditMode} 
+                    onKeyUp={this.handleKeyUp}
+                >
+                    {this.props.entity.get(this.props.item)}
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <input type="text" value={this.state.value} autoFocus 
+                        onChange={this.handleChange} 
+                        onBlur={this.handleSubmit}
+                        onKeyUp={this.handleKeyUp}
+                    />
+                </div>
+            )
+        }
+    }
+}
+
+Field.defaultProps = {
+    initInEdit: false,
+    editable: true
+}
+
+Field.PropTypes = {
+    item: React.PropTypes.string.isRequired,
+    entity: React.PropTypes.any.isRequired,
+}
+
+
 class FireBaseAware extends React.Component {
     constructor(props) {
         super(props);
@@ -60,7 +142,6 @@ class FireBaseAware extends React.Component {
 
     }
 
-
     registerEntity(state, entityName) {
         let db = firebase.database();
 
@@ -69,11 +150,17 @@ class FireBaseAware extends React.Component {
         let keyIndex = [];
         let result = {
             saveEntity: function(entity) {
+                if (!entity) {
+                    throw "tried to save an undefined entity";
+                }
+                if (entity && entity.toJSON) {
+                    entity = entity.toJSON();
+                }
                 if (!entity.key) {
                     var newKey = db.ref().child(entityName).push().key;
-                    entity = entity.setIn('key', newKey);
+                    entity.key = newKey;
                 }
-                db.ref(entityName+'/' + entity.get('key')).set(entity.toJSON());
+                db.ref(entityName+'/' + entity.key).set(entity);
             },
             keyIndex: function(index) {
                 return keyIndex[index];
@@ -110,19 +197,20 @@ class FireBaseAware extends React.Component {
     }
 
 
-
     render() {
         return ( 
             <div>
                 {this.state.users.map((data) =>
-                    <div>{data.get('name')}</div>
+                    <Field entity={data} item='name' saveFunc={this.users.saveEntity}></Field>
                 )}
-                <button onClick={this.users.saveEntity}>save me</button>      
+                <button onClick={this.users.saveEntity}>save me2</button>      
                 {this.props.children}
             </div>
         );
     }
 }
+
+
 
 
 ReactDOM.render(
