@@ -40,14 +40,17 @@ class MyComponent extends React.Component {
 }
 
 
-
-class Field extends React.Component {
+class SelectField extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             edit: this.props.initInEdit,
             value: props.entity.get(props.item)
+        }
+
+        if (!this.state.value) {
+            this.state.value = this.props.tempValue;
         }
 
         this.changeStateToEditMode = this.changeStateToEditMode.bind(this);
@@ -83,43 +86,281 @@ class Field extends React.Component {
 
     handleSubmit() {
         this.changeStateToReadMode();
+        let isValueSameAsTempInitialValue = this.state.value == this.props.tempValue;
+        if (isValueSameAsTempInitialValue) {
+            return;
+        }
         let newValue = this.props.entity.set(this.props.item, this.state.value);
         this.props.saveFunc(newValue);
     }
 
     render() {
-        if (!this.state.edit) {
-            return (
-                <div tabIndex='0'
-                    onClick={this.changeStateToEditMode} 
-                    onKeyUp={this.handleKeyUp}
-                >
-                    {this.props.entity.get(this.props.item)}
-                </div>
-            )
-        } else {
-            return (
-                <div>
+        return (
+            <div tabIndex='0' onKeyUp={this.handleKeyUp}>
+                {this.state.edit ? (
+                    <select value={this.state.value} onChange={this.handleChange} onBlur={this.handleSubmit}>
+                        {this.props.list.map((item)=>
+                            <option value={item.get('key')}>{item.get(this.props.label)}</option>
+                        )}
+                    </select>
+                ) : (
+                    <div onClick={this.changeStateToEditMode}>
+                        {this.state.value}
+                    </div>
+                )}
+            </div>
+        );
+    }
+}
+
+SelectField.defaultProps = {
+    initInEdit: false,
+    editable: true,
+    tempValue: '[empty]'
+}
+
+SelectField.PropTypes = {
+    item: React.PropTypes.string.isRequired,
+    entity: React.PropTypes.any.isRequired,
+}
+
+
+
+class Field extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            edit: this.props.initInEdit,
+            value: props.entity.get(props.item)
+        }
+
+        if (!this.state.value) {
+            this.state.value = this.props.tempValue;
+        }
+
+        this.changeStateToEditMode = this.changeStateToEditMode.bind(this);
+        this.changeStateToReadMode = this.changeStateToReadMode.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
+    }
+
+    changeStateToEditMode() {
+        if (!this.props.editable) {return; }
+        this.setState({edit: true});
+    }
+
+    changeStateToReadMode() {
+        
+        this.setState({edit: false});
+    }
+
+    handleKeyUp(event) {
+        if (event.keyCode == 13) {
+            if (this.state.edit) {
+                this.handleSubmit();
+            } else {
+                this.changeStateToEditMode();
+            }
+        }
+    }
+
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
+
+    handleSubmit() {
+        this.changeStateToReadMode();
+        let isValueSameAsTempInitialValue = this.state.value == this.props.tempValue;
+        if (isValueSameAsTempInitialValue) {
+            return;
+        }
+        let newValue = this.props.entity.set(this.props.item, this.state.value);
+        this.props.saveFunc(newValue);
+    }
+
+    render() {
+        return (
+            <div tabIndex='0' onKeyUp={this.handleKeyUp}>
+                {this.state.edit ? (
                     <input type="text" value={this.state.value} autoFocus 
                         onChange={this.handleChange} 
                         onBlur={this.handleSubmit}
-                        onKeyUp={this.handleKeyUp}
                     />
-                </div>
-            )
-        }
+                ) : (
+                    <div onClick={this.changeStateToEditMode}>
+                        {this.state.value}
+                    </div>
+                )}
+            </div>
+        );
     }
 }
 
 Field.defaultProps = {
     initInEdit: false,
-    editable: true
+    editable: true,
+    tempValue: '[empty]'
 }
 
 Field.PropTypes = {
     item: React.PropTypes.string.isRequired,
     entity: React.PropTypes.any.isRequired,
 }
+
+
+
+
+
+class MainScreen extends React.Component {
+    
+}
+
+
+class WeightPresentationScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="table: user list with avatars" />
+                <Mock name="Title: Selected user with avatar" />
+                <Mock name="Graph" />
+                <Mock name="Weightloss icon" />
+                <Mock name="Money icon" />
+                <Mock name="Week icon" />
+            </div>
+        );
+    }
+}
+
+
+
+class WeeklyWeightScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: Weekly Weight" />
+                <Mock name="Select Group" />
+                <Mock name="select week" />
+                <Mock name="select user" />
+                <Mock name="enter weight" />
+                <Mock name="button: submit" />
+                <Mock name="button: missing" />
+                <Mock name="button: holiday" />
+            </div>
+        );
+    }
+}
+
+
+class GroupActionsScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: Group Actions" />
+                <Mock name="Select Group" />
+                <Mock name="sub title: group weeks" />
+                <Mock name="table: week | status | postpone | change details" />
+                <Mock name="sub title group users" />
+                <Mock name="table: name | -3.6 | 350/500 | remove | program | money" />
+                <Mock name="sub title: add new user to group" />
+                <Mock name="select user" />
+                <Mock name="button: add" />                
+            </div>
+        );
+    }
+}
+
+
+
+class NewUserScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: New User" />
+                <Mock name="Select Group" />
+                <Mock name="First" />
+                <Mock name="Last" />
+                <Mock name="phone" />
+                <Mock name="avatar" />
+
+                <Mock name="button: submit" />                
+            </div>
+        );
+    }
+}
+
+
+
+class NewGroupScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: NewGroup" />
+                <Mock name="Group Name" />
+                <Mock name="Starting date" />
+                <Mock name="Starting time" />
+
+                <Mock name="button: submit" />                
+            </div>
+        );
+    }
+}
+
+
+
+class ManagementScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: Management" />
+                <Mock name="Add User" />
+                <Mock name="Add Group" />
+                <Mock name="Add Group Actions" />
+
+                <Mock name="Table: user|group| set group" />                
+            </div>
+        );
+    }
+}
+
+
+class Mock extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div class='mock'>{this.props.name}</div>
+        )
+    }
+}
+
 
 
 class FireBaseAware extends React.Component {
@@ -139,7 +380,8 @@ class FireBaseAware extends React.Component {
         firebase.initializeApp(config);
 
         this.users = this.registerEntity(this.state, 'users');
-
+        //this.weeks = this.registerEntity(this.state, 'weeks');
+        
     }
 
     registerEntity(state, entityName) {
@@ -198,11 +440,17 @@ class FireBaseAware extends React.Component {
 
 
     render() {
+        let list = List([
+            Map({key: '1', value:'bobo'}),
+            Map({key: '2', value:'gogo'}),
+            Map({key: '3', value:'coco'}),
+             ]);
         return ( 
             <div>
                 {this.state.users.map((data) =>
                     <Field entity={data} item='name' saveFunc={this.users.saveEntity}></Field>
                 )}
+                
                 <button onClick={this.users.saveEntity}>save me2</button>      
                 {this.props.children}
             </div>
