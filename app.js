@@ -357,17 +357,21 @@ class NewGroupScreen extends React.Component {
     constructor(props) {
         super(props);
 
-        this.updateName = this.updateName.bind(this);
-        this.updateStartDate = this.updateStartDate.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.updateValue = this.updateValue.bind(this);
+
+        this.state = {};
+        if (props.params) {
+            _.forEach(props.params, (val, key)=> {
+                this.state[key] = val;
+            });
+        }
     }
 
-    updateName(val) {
-        this.setState({name: val});
-    }
-
-    updateStartDate(val) {
-        this.setState({startDate: val});
+    updateValue(value, field) {
+        let stateUpdate = {};
+        stateUpdate[field]=value;
+        this.setState(stateUpdate);
     }
 
     handleSubmit(event) {
@@ -380,18 +384,18 @@ class NewGroupScreen extends React.Component {
                 <Mock name="Title: NewGroup" />
 
                 <NamedField name='Group Name'>
-                    <TextField update={this.updateName} />
+                    <TextField update={this.updateValue} field='name' />
                 </NamedField>
 
                 <NamedField name='Starting Date'>
-                    <DateField update={this.updateStartDate} format='DD/MM/YY' />
+                    <DateField update={this.updateValue} field='startDate' format='DD/MM/YY' />
                 </NamedField>
 
                 <NamedField name='Time'>
-                    <DateField update={this.updateTime} format='HH:mm' />
+                    <DateField update={this.updateValue} field='time' format='HH:mm' />
                 </NamedField>
 
-                <button onclick={this.handleSubmit}>Submit</button>                
+                <button onClick={this.handleSubmit}>Submit</button>                
             </div>
         );
     }
@@ -463,7 +467,7 @@ class TextField extends React.Component {
     updateValue(event) {
         this.setState({value: event.target.value});
         if (this.props.update) {
-            this.props.update(event.target.value);
+            this.props.update(event.target.value, this.props.field);
         }
     }
 
@@ -489,14 +493,14 @@ class DateField extends React.Component {
         this.updateDate = this.updateDate.bind(this);
     }
 
-    updateDate(val) {
+    updateDate(val, field) {
         let valid = moment(val, this.props.format, true).isValid();
-        this.setState({value: event.target.value});
+        this.setState({value: val});
         this.setState({valid: valid});
 
         if (valid) {
             if (this.props.update) {
-                this.props.update(event.target.value);
+                this.props.update(val, field);
             }
         } 
     }
@@ -504,7 +508,7 @@ class DateField extends React.Component {
     render() {
         return (
             <span>
-                <TextField update={this.updateDate} placeholder={this.props.format}/>
+                <TextField update={this.updateDate} field={this.props.field} placeholder={this.props.format}/>
                 {!this.state.valid && 
                     <span className='error'>*</span>
                 }
@@ -625,7 +629,9 @@ ReactDOM.render(
             <Route path="/management" component={ManagementScreen} />
             <Route path="/newuser" component={NewUserScreen} />
             <Route path="/groups" component={GroupActionsScreen} />
-            <Route path="/newgroup" component={NewGroupScreen} />
+            <Route path="/newgroup" component={NewGroupScreen} >
+                <Route path="/newgroup/:name/:date/:hour" component={NewGroupScreen} />
+            </Route>
         </Router>
         <Footer />
     </div>,
