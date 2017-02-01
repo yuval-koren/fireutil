@@ -1,6 +1,7 @@
 module.exports = {
     entry: "./app.js",
     devtool: 'source-map',
+    devServer: { contentBase: ".", host:"localhost", port: 8080},
     output: {
         path: __dirname+'/bin',
         filename: "bundle.js"
@@ -26,4 +27,5 @@ module.exports = {
             }
         ]
     }
+
 }

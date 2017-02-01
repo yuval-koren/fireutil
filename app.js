@@ -8,8 +8,9 @@ import database from 'firebase';
 //import update from 'immutability-helper';
 import _ from 'lodash';
 import {Map, List} from 'immutable';
-import {Router, Route, hashHistory } from 'react-router'
-import moment from 'moment'
+import {Router, Route, hashHistory } from 'react-router';
+import moment from 'moment';
+import greet from './fire';
 
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
@@ -360,10 +361,10 @@ class NewGroupScreen extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateValue = this.updateValue.bind(this);
 
-        this.state = {};
+        this.state = {value: {}};
         if (props.params) {
             _.forEach(props.params, (val, key)=> {
-                this.state[key] = val;
+                this.state.value[key] = val;
             });
         }
     }
@@ -371,11 +372,13 @@ class NewGroupScreen extends React.Component {
     updateValue(value, field) {
         let stateUpdate = {};
         stateUpdate[field]=value;
-        this.setState(stateUpdate);
+        this.setState({
+            value: stateUpdate
+        });
     }
 
     handleSubmit(event) {
-
+        fb.saveGroup(state.value);
     }
 
     render() {
@@ -384,15 +387,15 @@ class NewGroupScreen extends React.Component {
                 <Mock name="Title: NewGroup" />
 
                 <NamedField name='Group Name'>
-                    <TextField update={this.updateValue} field='name' />
+                    <TextField update={this.updateValue} field='name' initValue={this.state.value['name']}/>
                 </NamedField>
 
                 <NamedField name='Starting Date'>
-                    <DateField update={this.updateValue} field='startDate' format='DD/MM/YY' />
+                    <DateField update={this.updateValue} field='startDate' format='DD/MM/YY' initValue={this.state.value['date']}/>
                 </NamedField>
 
                 <NamedField name='Time'>
-                    <DateField update={this.updateValue} field='time' format='HH:mm' />
+                    <DateField update={this.updateValue} field='time' format='HH:mm' initValue={this.state.value['time']}/>
                 </NamedField>
 
                 <button onClick={this.handleSubmit}>Submit</button>                
@@ -455,12 +458,11 @@ class NamedField extends React.Component {
     
 }
 
-
 class TextField extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {value: ''};
+        this.state = {value: this.props.initValue};
         this.updateValue = this.updateValue.bind(this);
     }
 
@@ -479,15 +481,17 @@ class TextField extends React.Component {
 }
 
 TextField.defaultProps = {
-    placeholder: ''
+    placeholder: '',
+    initValue: ''
 }
 
 class DateField extends React.Component {
     constructor(props) {
         super(props);
 
+
         this.state = {
-            value: '',
+            value: this.props.initValue,
             valid: true,
         };
         this.updateDate = this.updateDate.bind(this);
@@ -508,7 +512,7 @@ class DateField extends React.Component {
     render() {
         return (
             <span>
-                <TextField update={this.updateDate} field={this.props.field} placeholder={this.props.format}/>
+                <TextField update={this.updateDate} field={this.props.field} placeholder={this.props.format} initValue={this.props.initValue}/>
                 {!this.state.valid && 
                     <span className='error'>*</span>
                 }
@@ -517,105 +521,9 @@ class DateField extends React.Component {
     }
 }
 
-
-
-class FireBaseAware extends React.Component {
-    constructor(props) {
-        super(props);
-            
-        var config = {
-            apiKey: "AIzaSyDZGp5jLl_E6xYdDROfqfXqH6fBx70ZqVs",
-            authDomain: "looseandwin.firebaseapp.com",
-            databaseURL: "https://looseandwin.firebaseio.com",
-            storageBucket: "project-6410405059481098151.appspot.com",
-            messagingSenderId: "512733212020"
-        };
-
-        this.state = { };
-      
-        firebase.initializeApp(config);
-
-        this.users = this.registerEntity(this.state, 'users');
-        //this.weeks = this.registerEntity(this.state, 'weeks');
-        
-    }
-
-    registerEntity(state, entityName) {
-        let db = firebase.database();
-
-        state[entityName] = List([]);
-
-        let keyIndex = [];
-        let result = {
-            saveEntity: function(entity) {
-                if (!entity) {
-                    throw "tried to save an undefined entity";
-                }
-                if (entity && entity.toJSON) {
-                    entity = entity.toJSON();
-                }
-                if (!entity.key) {
-                    var newKey = db.ref().child(entityName).push().key;
-                    entity.key = newKey;
-                }
-                db.ref(entityName+'/' + entity.key).set(entity);
-            },
-            keyIndex: function(index) {
-                return keyIndex[index];
-            }
-        }
-
-        db.ref(entityName).on('child_added', (data) => {   
-            let entity = data.val();
-            entity.key = data.key;      
-
-            let newValue = this.state.users.push(Map(entity));
-            let newObject = {};
-            newObject[entityName] = newValue;
-            this.setState(newObject);
-
-            keyIndex[entity.key] = newValue;
-        });
-
-        db.ref(entityName).on('child_changed', (data) => {
-            var changedIndex = this.state[entityName].findIndex((entity)=>entity.get('key')===data.key);
-            let entity = data.val();
-            entity.key = data.key;
-
-            let newValue = this.state[entityName].setIn([changedIndex], Map(entity));         
-            let newObject = {};
-            newObject[entityName] = newValue;
-            this.setState(newObject);
-            
-            keyIndex[entity.key] = newValue;
-
-        });
-
-        return result;
-    }
-
-
-    render() {
-        let list = List([
-            Map({key: '1', value:'bobo'}),
-            Map({key: '2', value:'gogo'}),
-            Map({key: '3', value:'coco'}),
-             ]);
-        return ( 
-            <div>
-                {this.state.users.map((data) =>
-                    <Field entity={data} item='name' saveFunc={this.users.saveEntity}></Field>
-                )}
-                
-                <button onClick={this.users.saveEntity}>save me2</button>      
-                {this.props.children}
-            </div>
-        );
-    }
+DateField.defaultProps = {
+    initValue: ''
 }
-
-
-
 
 
 
@@ -629,8 +537,8 @@ ReactDOM.render(
             <Route path="/management" component={ManagementScreen} />
             <Route path="/newuser" component={NewUserScreen} />
             <Route path="/groups" component={GroupActionsScreen} />
-            <Route path="/newgroup" component={NewGroupScreen} >
-                <Route path="/newgroup/:name/:date/:hour" component={NewGroupScreen} />
+            <Route path="/newgroup" component={NewGroupScreen} firebase='ggg'>
+                <Route path="/newgroup/:name/:date/:time" component={NewGroupScreen} firebase='fff'/>
             </Route>
         </Router>
         <Footer />
