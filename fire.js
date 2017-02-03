@@ -7,6 +7,31 @@ import {Map, List} from 'immutable';
 import moment from 'moment';
 
 
+var group_md = {
+    name: 'group',
+    path: ['groups'],
+    type: 'list',
+    fields: [
+        {
+            desc: 'Name',
+            type: 'string'
+        },
+        {
+            desc: 'Date',
+            type: 'date',
+            options: {format: 'dd/mm/yyyy'}
+        },
+        {
+            desc: 'Hour',
+            type: 'date',
+            options: {format: 'HH:MM'}
+        },        
+    ]
+}
+
+let metadata = [group_md];
+
+
 export class FireBaseUtils {
     constructor() {
             
@@ -19,78 +44,253 @@ export class FireBaseUtils {
         };
 
         this.state = { };
+        this.index = [];
+        this.listRegisters = [];
+        this.singleRegisters = [];
+        this.metadata = {};
       
         firebase.initializeApp(config);
-
-        this.users = this.registerEntity(this.state, 'users');
+        this.db = firebase.database();
+ 
+        this.registerSingle = this.registerSingle.bind(this);
+        this.registerList = this.registerList.bind(this);
+        //this.users = this.registerEntity(this.state, 'users');
         //this.weeks = this.registerEntity(this.state, 'weeks');
         
     }
 
-    saveGroup(group) {
-        if (!group.key) {
-            var newKey = db.ref().child('group').push().key;
-            group.key = newKey;
-        }
-        db.ref('group'+'/' + group.key).set(group);
+    informListRegistersOnAdd(entity) {
     }
 
-    //listenToGroup()
+    informListRegistersOnChange(entity) {
+            
+    }
 
-    registerEntity(state, entityName) {
-        let db = firebase.database();
-
-        state[entityName] = List([]);
-
-        let keyIndex = [];
-        let result = {
-            saveEntity: function(entity) {
-                if (!entity) {
-                    throw "tried to save an undefined entity";
-                }
-                if (entity && entity.toJSON) {
-                    entity = entity.toJSON();
-                }
-                if (!entity.key) {
-                    var newKey = db.ref().child(entityName).push().key;
-                    entity.key = newKey;
-                }
-                db.ref(entityName+'/' + entity.key).set(entity);
-            },
-            keyIndex: function(index) {
-                return keyIndex[index];
+    informSingleRegistersOnAdd(entity) {
+        _.forEach(this.singleRegisters, (regItem) => {
+            if (entity.key===regItem.entityKey) {
+                regItem.component.setState({group: entity});    
             }
-        }
 
-        db.ref(entityName).on('child_added', (data) => {   
-            let entity = data.val();
-            entity.key = data.key;      
+        })
+    }
 
-            let newValue = this.state.users.push(Map(entity));
-            let newObject = {};
-            newObject[entityName] = newValue;
-            this.setState(newObject);
+    informSingleRegistersOnChange(entity) {
+        _.forEach(this.singleRegisters, (regItem) => {
+            if (entity.key===regItem.entityKey) {
+                regItem.component.setState({group: entity});    
+            }
 
-            keyIndex[entity.key] = newValue;
-        });
+        })
+    }
 
-        db.ref(entityName).on('child_changed', (data) => {
-            var changedIndex = this.state[entityName].findIndex((entity)=>entity.get('key')===data.key);
+    findIndex(entityName, key) {
+        let changedIndex = this.index[entityName].findIndex((entity)=>entity.key===key);
+        return changedIndex;
+    }
+
+    findEntity(entityName, key) {
+        let index = this.findIndex(entityName, key);
+        let entity = this.index[entityName][index];
+        return entity;
+    }
+
+    getPath(metadata) {
+        return 'groups';
+    }
+    
+
+    initialize(metadatas) {
+
+        let prepareEntity = (data) => {
             let entity = data.val();
             entity.key = data.key;
+            return entity;
+        }
 
-            let newValue = this.state[entityName].setIn([changedIndex], Map(entity));         
-            let newObject = {};
-            newObject[entityName] = newValue;
-            this.setState(newObject);
+               
+
+        _.forEach(metadatas, (metadata)=>{
+            this.metadata[metadata.name] = metadata;
+            this.index[metadata.name] = [];
             
-            keyIndex[entity.key] = newValue;
+            this.db.ref(this.getPath(metadata)).on('child_added', (data) => {   
+                let entity = prepareEntity(data);
+                this.index[metadata.name].push(entity);
+                this.informListRegistersOnAdd(entity);
+                this.informSingleRegistersOnAdd(entity);
+            });
 
-        });
+            this.db.ref(this.getPath(metadata)).on('child_changed', (data) => {
+                var changedIndex = this.findIndex(metadata.name);
+                let entity = prepareEntity(data);
+                this.index[metadata.name][changedIndex] = entity;
+                this.informListRegistersOnChange(entity);
+                this.informSingleRegistersOnChange(entity);
+            });
+       })
+    }
 
-        return result;
+    getMetadata(entityName) {
+        return this.metadata[entityName];
+    }
+
+    registerList(component, entityName) {
+
+        let generateKey = () => {
+            return 'yuval';
+        }
+
+        let regItem = {
+            component: component,
+            entityName: entityName,
+            key: generateKey()
+        }
+
+        this.listRegisters.push(regItem);
+
+        
+        return {
+            unregister: () => {
+
+            },
+            save: () => {
+
+            }
+        }    
+    }
+
+    
+
+    registerSingle(component, entityName, key) {
+        let that = this;
+        let generateKey = () => {
+            return 'yuval';
+        }
+
+        let regItem = {
+            component: component,
+            entityName: entityName,
+            entityKey: key,
+            key: generateKey()
+        }
+
+        this.singleRegisters.push(regItem);
+        let entity = this.findEntity(entityName, key);
+        if (entity) {
+            component.state[entityName] = entity;
+        }
+
+        return {
+            unregister: () => {
+                _.remove(this.singleRegisters, (item) => item===regItem);
+                //let indexToRemove = _.findIndex(this.singleRegisters, (item) => regItem.key === item.key );
+                //this.singleRegisters.splice(indexToRemove, 1);
+            },
+            save: (entity) => {
+                let path = this.getPath(this.metadata[entityName]);
+                if (!entity.key) {
+                    var newKey = this.db.ref().child(path).push().key;
+                    entity.key = newKey;
+                }
+                this.db.ref(path+'/' + entity.key).set(entity);
+                
+            }
+        }    
+
+    }
+
+    saveGroup(group) {
+        if (!group.key) {
+            var newKey = this.db.ref().child('group').push().key;
+            group.key = newKey;
+        }
+        this.db.ref('group'+'/' + group.key).set(group);
     }
 }
 
-export var fb = new FireBaseUtils();
+var firebaseutil = new FireBaseUtils();
+firebaseutil.initialize(metadata);
 
+
+export function fb() {
+    return firebaseutil;    
+}
+
+
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js

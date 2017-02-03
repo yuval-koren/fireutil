@@ -10,7 +10,7 @@ import _ from 'lodash';
 import {Map, List} from 'immutable';
 import {Router, Route, hashHistory } from 'react-router';
 import moment from 'moment';
-import greet from './fire';
+import * as fb from './fire';
 
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
@@ -361,24 +361,32 @@ class NewGroupScreen extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateValue = this.updateValue.bind(this);
 
+        let fire = fb.fb();
+        this.state = {group: {}};
+
+        let key = this.props.params['key'];
+        this.group_api = fire.registerSingle(this, 'group', key);
+        
+        /*
         this.state = {value: {}};
         if (props.params) {
             _.forEach(props.params, (val, key)=> {
                 this.state.value[key] = val;
             });
         }
+        */
     }
 
     updateValue(value, field) {
-        let stateUpdate = {};
+        let stateUpdate = this.state.group;
         stateUpdate[field]=value;
         this.setState({
-            value: stateUpdate
+            group: stateUpdate
         });
     }
 
     handleSubmit(event) {
-        fb.saveGroup(state.value);
+        this.group_api.save(this.state.group);
     }
 
     render() {
@@ -387,15 +395,15 @@ class NewGroupScreen extends React.Component {
                 <Mock name="Title: NewGroup" />
 
                 <NamedField name='Group Name'>
-                    <TextField update={this.updateValue} field='name' initValue={this.state.value['name']}/>
+                    <TextField update={this.updateValue} field='name' initValue={this.state.group['name']}/>
                 </NamedField>
 
                 <NamedField name='Starting Date'>
-                    <DateField update={this.updateValue} field='startDate' format='DD/MM/YY' initValue={this.state.value['date']}/>
+                    <DateField update={this.updateValue} field='date' format='DD/MM/YY' initValue={this.state.group['date']}/>
                 </NamedField>
 
                 <NamedField name='Time'>
-                    <DateField update={this.updateValue} field='time' format='HH:mm' initValue={this.state.value['time']}/>
+                    <DateField update={this.updateValue} field='time' format='HH:mm' initValue={this.state.group['time']}/>
                 </NamedField>
 
                 <button onClick={this.handleSubmit}>Submit</button>                
@@ -473,6 +481,10 @@ class TextField extends React.Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: nextProps.initValue});
+    }
+
     render() {
         return (
             <input type='text' value={this.state.value} onChange={this.updateValue} placeholder={this.props.placeholder} />
@@ -497,16 +509,20 @@ class DateField extends React.Component {
         this.updateDate = this.updateDate.bind(this);
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: nextProps.initValue});
+    }
+
     updateDate(val, field) {
         let valid = moment(val, this.props.format, true).isValid();
         this.setState({value: val});
         this.setState({valid: valid});
 
-        if (valid) {
+        //if (valid) {
             if (this.props.update) {
                 this.props.update(val, field);
             }
-        } 
+        //} 
     }
 
     render() {
@@ -538,10 +554,86 @@ ReactDOM.render(
             <Route path="/newuser" component={NewUserScreen} />
             <Route path="/groups" component={GroupActionsScreen} />
             <Route path="/newgroup" component={NewGroupScreen} firebase='ggg'>
-                <Route path="/newgroup/:name/:date/:time" component={NewGroupScreen} firebase='fff'/>
+                <Route path="/newgroup/:key" component={NewGroupScreen} firebase='fff'/>
             </Route>
         </Router>
         <Footer />
     </div>,
     document.getElementById('root')
 )
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
