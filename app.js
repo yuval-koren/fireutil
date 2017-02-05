@@ -361,20 +361,18 @@ class NewGroupScreen extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateValue = this.updateValue.bind(this);
 
-        let fire = fb.fb();
+    }
+
+    componentWillMount() {
         this.state = {group: {}};
 
+        let fire = fb.fb();
         let key = this.props.params['key'];
         this.group_api = fire.registerSingle(this, 'group', key);
-        
-        /*
-        this.state = {value: {}};
-        if (props.params) {
-            _.forEach(props.params, (val, key)=> {
-                this.state.value[key] = val;
-            });
-        }
-        */
+    }
+
+    componentWillUnmount() {
+        this.group_api.unregister();
     }
 
     updateValue(value, field) {
@@ -411,6 +409,41 @@ class NewGroupScreen extends React.Component {
         );
     }
 }
+
+
+class GroupsScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+
+    componentWillMount() {
+        this.state = {group: {}};
+
+        let fire = fb.fb();
+        this.group_api = fire.registerList(this, 'group');
+    }
+
+    componentWillUnmount() {
+        this.group_api.unregister();
+    }
+
+    render() {
+        return (
+            <div>
+                <Mock name="Title: Groups" />
+
+                {this.state['group'].map((entity) =>
+                    <div>name: {entity.name}, date: {entity.date}, time: {entity.time}</div>
+                )}
+                <Mock name="Table: group name|start date" />
+                <Mock name="button: Select Active group" />                
+
+            </div>
+        );
+    }
+}
+
 
 
 
@@ -518,11 +551,9 @@ class DateField extends React.Component {
         this.setState({value: val});
         this.setState({valid: valid});
 
-        //if (valid) {
-            if (this.props.update) {
-                this.props.update(val, field);
-            }
-        //} 
+        if (this.props.update) {
+            this.props.update(val, field);
+        }
     }
 
     render() {
@@ -552,7 +583,7 @@ ReactDOM.render(
             <Route path="/meeting" component={WeightPresentationScreen} />
             <Route path="/management" component={ManagementScreen} />
             <Route path="/newuser" component={NewUserScreen} />
-            <Route path="/groups" component={GroupActionsScreen} />
+            <Route path="/groups" component={GroupsScreen} />
             <Route path="/newgroup" component={NewGroupScreen} firebase='ggg'>
                 <Route path="/newgroup/:key" component={NewGroupScreen} firebase='fff'/>
             </Route>
@@ -561,6 +592,38 @@ ReactDOM.render(
     </div>,
     document.getElementById('root')
 )
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //

@@ -59,28 +59,41 @@ export class FireBaseUtils {
         
     }
 
+    updateState(regItem, value) {
+        let newObject = {};
+        newObject[regItem.entityName] = value;
+        regItem.component.setState(newObject);    
+    }
+
     informListRegistersOnAdd(entity) {
+        _.forEach(this.listRegisters, (regItem) => {
+            //todo: not for all registers, only for same entity name
+            //todo: set state is async. change implementation...
+            let list = _.clone(regItem.component.state[regItem.entityName]);
+
+            list.push(entity);
+            this.updateState(regItem, list);
+        });    
     }
 
     informListRegistersOnChange(entity) {
-            
+        _.forEach(this.listRegisters, (regItem) => {
+            let changedIndex = this.findIndex(regItem.entityName,entity.key);
+            let list = _.clone(regItem.component.state[regItem.entityName]);
+            list[changedIndex] = entity;
+            this.updateState(regItem, list);
+        });    
     }
 
     informSingleRegistersOnAdd(entity) {
-        _.forEach(this.singleRegisters, (regItem) => {
-            if (entity.key===regItem.entityKey) {
-                regItem.component.setState({group: entity});    
-            }
-
-        })
+        this.informSingleRegistersOnChange(entity);
     }
 
     informSingleRegistersOnChange(entity) {
         _.forEach(this.singleRegisters, (regItem) => {
             if (entity.key===regItem.entityKey) {
-                regItem.component.setState({group: entity});    
+                this.updateState(regItem, entity);
             }
-
         })
     }
 
@@ -107,8 +120,6 @@ export class FireBaseUtils {
             entity.key = data.key;
             return entity;
         }
-
-               
 
         _.forEach(metadatas, (metadata)=>{
             this.metadata[metadata.name] = metadata;
@@ -137,22 +148,18 @@ export class FireBaseUtils {
 
     registerList(component, entityName) {
 
-        let generateKey = () => {
-            return 'yuval';
-        }
-
         let regItem = {
             component: component,
             entityName: entityName,
-            key: generateKey()
         }
 
         this.listRegisters.push(regItem);
 
-        
+        component.state[entityName] = _.clone(this.index[entityName]);
+
         return {
             unregister: () => {
-
+                _.remove(this.listRegisters, (item) => item===regItem);
             },
             save: () => {
 
@@ -160,22 +167,18 @@ export class FireBaseUtils {
         }    
     }
 
-    
-
     registerSingle(component, entityName, key) {
         let that = this;
-        let generateKey = () => {
-            return 'yuval';
-        }
 
         let regItem = {
             component: component,
             entityName: entityName,
             entityKey: key,
-            key: generateKey()
         }
 
         this.singleRegisters.push(regItem);
+        
+        // update now the state
         let entity = this.findEntity(entityName, key);
         if (entity) {
             component.state[entityName] = entity;
@@ -184,8 +187,6 @@ export class FireBaseUtils {
         return {
             unregister: () => {
                 _.remove(this.singleRegisters, (item) => item===regItem);
-                //let indexToRemove = _.findIndex(this.singleRegisters, (item) => regItem.key === item.key );
-                //this.singleRegisters.splice(indexToRemove, 1);
             },
             save: (entity) => {
                 let path = this.getPath(this.metadata[entityName]);
@@ -199,14 +200,6 @@ export class FireBaseUtils {
         }    
 
     }
-
-    saveGroup(group) {
-        if (!group.key) {
-            var newKey = this.db.ref().child('group').push().key;
-            group.key = newKey;
-        }
-        this.db.ref('group'+'/' + group.key).set(group);
-    }
 }
 
 var firebaseutil = new FireBaseUtils();
@@ -218,6 +211,26 @@ export function fb() {
 }
 
 
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
+
+
+// WEBPACK FOOTER //
+// ./fire.js
 
 
 // WEBPACK FOOTER //
