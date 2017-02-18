@@ -420,8 +420,8 @@ class GroupsScreen extends React.Component {
     componentWillMount() {
         this.state = {group: {}};
 
-        let fire = fb.fb();
-        this.group_api = fire.registerList(this, 'group');
+        this.fire = fb.fb();
+        this.group_api = this.fire.registerList(this, 'group');
     }
 
     componentWillUnmount() {
@@ -433,10 +433,7 @@ class GroupsScreen extends React.Component {
             <div>
                 <Mock name="Title: Groups" />
 
-                {this.state['group'].map((entity) =>
-                    <div>name: {entity.name}, date: {entity.date}, time: {entity.time}</div>
-                )}
-                <Mock name="Table: group name|start date" />
+                <TTable metadata={this.fire.getMetadata('group')} list={this.state.group} />  
                 <Mock name="button: Select Active group" />                
 
             </div>
@@ -445,6 +442,64 @@ class GroupsScreen extends React.Component {
 }
 
 
+class TTable extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.metadata = props.metadata;
+        this.list = props.list;
+    }
+
+    render() {
+        return (
+            <div>
+                <table>
+                    <THeaderRow metadata={this.props.metadata} />
+                    {this.props.list.map((row) => (
+                        <TRow key={row.key} entity={row} metadata={this.props.metadata} />
+                    ))}
+                </table>
+            </div>
+        )
+    }
+}
+
+
+class THeaderRow extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <thead>
+                <tr>
+                    {this.props.metadata.fields.map((column) => (
+                        <td key={column.fname}>{column.desc}</td>
+                    ))}
+                </tr>
+            </thead>
+        )        
+    }
+}
+
+class TRow extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <tbody>
+                <tr>
+                    {this.props.metadata.fields.map((field) => (
+                        <td key={field.fname}>{this.props.entity[field.fname]}</td>
+                    ))}
+                </tr>
+            </tbody>
+        )                
+    }
+}
 
 
 class ManagementScreen extends React.Component {
@@ -592,6 +647,30 @@ ReactDOM.render(
     </div>,
     document.getElementById('root')
 )
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //

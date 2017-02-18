@@ -14,16 +14,19 @@ var group_md = {
     fields: [
         {
             desc: 'Name',
-            type: 'string'
+            type: 'string',
+            fname: 'name',
         },
         {
             desc: 'Date',
             type: 'date',
+            fname: 'date',
             options: {format: 'dd/mm/yyyy'}
         },
         {
             desc: 'Hour',
             type: 'date',
+            fname: 'time',
             options: {format: 'HH:MM'}
         },        
     ]
