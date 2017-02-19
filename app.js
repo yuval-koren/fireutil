@@ -354,6 +354,79 @@ class NewUserScreen extends React.Component {
 
 
 
+class EntityForm extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.updateValue = this.updateValue.bind(this);
+        this.entityName = this.props.metadata.name;
+    }
+
+    createInitialState() {
+        let state = {};
+        state[this.entityName] = {};
+        return state;
+    }
+
+    componentWillMount() {
+        this.state = this.createInitialState();
+
+        let fire = fb.fb();
+        this.state.key = this.props.entityKey;
+        if (!this.state.key && this.props.params) {
+            this.state.key = this.props.params['key'];
+        }
+        this.entityAPI = fire.registerSingle(this, this.entityName, this.state.key);
+    }
+
+    componentWillUnmount() {
+        this.entityAPI.unregister();
+    }
+
+    updateValue(value, field) {
+        let stateUpdate = this.state[this.entityName];
+        stateUpdate[field]=value;
+
+        let updateField = {}
+        updateField[this.entityName] = stateUpdate
+        this.setState(updateField);
+    }
+
+    handleSubmit(event) {
+        this.entityAPI.save(this.state[this.entityName]);
+    }
+
+    render() {
+        let fields = this.props.metadata.fields.map((field) => {
+            if (field.type==='string') {
+                return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        <TextField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} />
+                    </NamedField>
+                );
+            } else if (field.type==='date') {
+                return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        <DateField update={this.updateValue} field={field.fname} format={field.options.format} initValue={this.state[this.entityName][field.fname]} />
+                    </NamedField>
+                );
+            };
+        });
+        return (
+            <div>
+                <Mock name="Title: NewGroup" />
+
+                {fields}
+
+                <button onClick={this.handleSubmit}>Submit</button>                
+            </div>
+        );
+    }
+}
+
+
+
 class NewGroupScreen extends React.Component {
     constructor(props) {
         super(props);
@@ -443,8 +516,8 @@ class GroupsScreen extends React.Component {
                 <Mock name="Title: Groups" />
 
                 <TTable onSelect={this.onSelect} metadata={this.fire.getMetadata('group')} list={this.state.group} />  
-                <NewGroupScreen key={this.state.selected} entityKey={this.state.selected} />
-
+                <EntityForm metadata={this.fire.getMetadata('group')} key={this.state.selected} entityKey={this.state.selected} />
+ 
                 <Mock name="button: Select Active group" />                
                 <div>Selected key is: {this.state.selected}</div>
             </div>

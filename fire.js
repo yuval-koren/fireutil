@@ -13,18 +13,18 @@ var group_md = {
     type: 'list',
     fields: [
         {
-            desc: 'Name',
+            desc: 'Group Name',
             type: 'string',
             fname: 'name',
         },
         {
-            desc: 'Date',
+            desc: 'Starting Date',
             type: 'date',
             fname: 'date',
             options: {format: 'dd/mm/yyyy'}
         },
         {
-            desc: 'Hour',
+            desc: 'Meeting Hour',
             type: 'date',
             fname: 'time',
             options: {format: 'HH:MM'}
