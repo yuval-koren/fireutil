@@ -367,8 +367,11 @@ class NewGroupScreen extends React.Component {
         this.state = {group: {}};
 
         let fire = fb.fb();
-        let key = this.props.params['key'];
-        this.group_api = fire.registerSingle(this, 'group', key);
+        this.state.key = this.props.entityKey;
+        if (!this.state.key && this.props.params) {
+            this.state.key = this.props.params['key'];
+        }
+        this.group_api = fire.registerSingle(this, 'group', this.state.key);
     }
 
     componentWillUnmount() {
@@ -414,6 +417,8 @@ class NewGroupScreen extends React.Component {
 class GroupsScreen extends React.Component {
     constructor(props) {
         super(props);
+
+        this.onSelect = this.onSelect.bind(this);
     }
 
 
@@ -428,14 +433,20 @@ class GroupsScreen extends React.Component {
         this.group_api.unregister();
     }
 
+    onSelect(key) {
+        this.setState({selected: key});
+    }
+
     render() {
         return (
             <div>
                 <Mock name="Title: Groups" />
 
-                <TTable metadata={this.fire.getMetadata('group')} list={this.state.group} />  
-                <Mock name="button: Select Active group" />                
+                <TTable onSelect={this.onSelect} metadata={this.fire.getMetadata('group')} list={this.state.group} />  
+                <NewGroupScreen key={this.state.selected} entityKey={this.state.selected} />
 
+                <Mock name="button: Select Active group" />                
+                <div>Selected key is: {this.state.selected}</div>
             </div>
         );
     }
@@ -456,7 +467,7 @@ class TTable extends React.Component {
                 <table>
                     <THeaderRow metadata={this.props.metadata} />
                     {this.props.list.map((row) => (
-                        <TRow key={row.key} entity={row} metadata={this.props.metadata} />
+                        <TRow onSelect={this.props.onSelect} key={row.key} entity={row} metadata={this.props.metadata} />
                     ))}
                 </table>
             </div>
@@ -491,7 +502,7 @@ class TRow extends React.Component {
     render() {
         return (
             <tbody>
-                <tr>
+                <tr onClick={()=>this.props.onSelect(this.props.entity.key)}>
                     {this.props.metadata.fields.map((field) => (
                         <td key={field.fname}>{this.props.entity[field.fname]}</td>
                     ))}
@@ -647,6 +658,18 @@ ReactDOM.render(
     </div>,
     document.getElementById('root')
 )
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //
