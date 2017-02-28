@@ -360,6 +360,7 @@ class EntityForm extends React.Component {
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateValue = this.updateValue.bind(this);
+        this.takeParams = this.takeParams.bind(this);
         this.entityName = this.props.metadata.name;
     }
 
@@ -369,20 +370,41 @@ class EntityForm extends React.Component {
         return state;
     }
 
+    // takes parameter from props or props.params
+    takeParams(param) {
+        // first try to take from props
+        let parameterValue = this.props[param];
+
+        // try to take from url
+        if (!parameterValue && this.props.params) {
+            parameterValue = this.props.params[param];
+        } 
+
+        // try to take from router props
+        if (!parameterValue && this.props.route) {
+            parameterValue = this.props.route[param];
+        } 
+
+        return parameterValue;
+    }
+
     componentWillMount() {
         this.state = this.createInitialState();
 
         let fire = fb.fb();
-        this.state.key = this.props.entityKey;
-        if (!this.state.key && this.props.params) {
-            this.state.key = this.props.params['key'];
-        }
-        this.entityAPI = fire.registerSingle(this, this.entityName, this.state.key);
+        this.metadata = this.takeParams('metadata');
+
+        this.entityAPI = fire.registerSingle(this, fb.metadata()[this.entityName], this.takeParams('entityKey'));
     }
 
     componentWillUnmount() {
         this.entityAPI.unregister();
     }
+
+    componentWillReceiveProps(nextProps) {
+        var a =10;
+    }
+
 
     updateValue(value, field) {
         let stateUpdate = this.state[this.entityName];
@@ -398,7 +420,7 @@ class EntityForm extends React.Component {
     }
 
     render() {
-        let fields = this.props.metadata.fields.map((field) => {
+        let fields = this.metadata.fields.map((field) => {
             if (field.type==='string') {
                 return (
                     <NamedField key={field.fname} name={field.desc}> 
@@ -426,67 +448,6 @@ class EntityForm extends React.Component {
 }
 
 
-
-class NewGroupScreen extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.updateValue = this.updateValue.bind(this);
-
-    }
-
-    componentWillMount() {
-        this.state = {group: {}};
-
-        let fire = fb.fb();
-        this.state.key = this.props.entityKey;
-        if (!this.state.key && this.props.params) {
-            this.state.key = this.props.params['key'];
-        }
-        this.group_api = fire.registerSingle(this, 'group', this.state.key);
-    }
-
-    componentWillUnmount() {
-        this.group_api.unregister();
-    }
-
-    updateValue(value, field) {
-        let stateUpdate = this.state.group;
-        stateUpdate[field]=value;
-        this.setState({
-            group: stateUpdate
-        });
-    }
-
-    handleSubmit(event) {
-        this.group_api.save(this.state.group);
-    }
-
-    render() {
-        return (
-            <div>
-                <Mock name="Title: NewGroup" />
-
-                <NamedField name='Group Name'>
-                    <TextField update={this.updateValue} field='name' initValue={this.state.group['name']}/>
-                </NamedField>
-
-                <NamedField name='Starting Date'>
-                    <DateField update={this.updateValue} field='date' format='DD/MM/YY' initValue={this.state.group['date']}/>
-                </NamedField>
-
-                <NamedField name='Time'>
-                    <DateField update={this.updateValue} field='time' format='HH:mm' initValue={this.state.group['time']}/>
-                </NamedField>
-
-                <button onClick={this.handleSubmit}>Submit</button>                
-            </div>
-        );
-    }
-}
-
-
 class GroupsScreen extends React.Component {
     constructor(props) {
         super(props);
@@ -495,11 +456,28 @@ class GroupsScreen extends React.Component {
     }
 
 
+
+    // takes parameter from props or props.params
+    takeParams(param) {
+        let pval = this.props[param];
+
+        if (!pval && this.props.params) {
+            pval = this.props.params[param];
+        } 
+
+        if (!pval && this.props.route) {
+            pval = this.props.route[param];
+        } 
+
+        return pval;
+    }
+
+
     componentWillMount() {
         this.state = {group: {}};
-
+        this.metadata = this.takeParams('metadata');
         this.fire = fb.fb();
-        this.group_api = this.fire.registerList(this, 'group');
+        this.group_api = this.fire.registerList(this, fb.metadata()['group']);
     }
 
     componentWillUnmount() {
@@ -515,8 +493,8 @@ class GroupsScreen extends React.Component {
             <div>
                 <Mock name="Title: Groups" />
 
-                <TTable onSelect={this.onSelect} metadata={this.fire.getMetadata('group')} list={this.state.group} />  
-                <EntityForm metadata={this.fire.getMetadata('group')} key={this.state.selected} entityKey={this.state.selected} />
+                <TTable onSelect={this.onSelect} metadata={this.metadata} list={this.state.group} />  
+                <EntityForm metadata={fb.metadata().group} key={this.state.selected} entityKey={this.state.selected} />
  
                 <Mock name="button: Select Active group" />                
                 <div>Selected key is: {this.state.selected}</div>
@@ -705,148 +683,43 @@ class DateField extends React.Component {
             </span>
         )
     }
-}
+};
 
 DateField.defaultProps = {
     initValue: ''
-}
+};
 
 
+(function() {
+    let fire = fb.fb();
+    let group = fb.metadata()['group'];
 
-ReactDOM.render(
-    <div>
-        <Header />
-        <Router history={hashHistory}>
-            <Route path="/" component={MainScreen} />
-            <Route path="/weight" component={WeeklyWeightScreen} />
-            <Route path="/meeting" component={WeightPresentationScreen} />
-            <Route path="/management" component={ManagementScreen} />
-            <Route path="/newuser" component={NewUserScreen} />
-            <Route path="/groups" component={GroupsScreen} />
-            <Route path="/newgroup" component={NewGroupScreen} firebase='ggg'>
-                <Route path="/newgroup/:key" component={NewGroupScreen} firebase='fff'/>
-            </Route>
-        </Router>
-        <Footer />
-    </div>,
+    ReactDOM.render(
+        <div>
+            <Header />
+            <Router history={hashHistory}>
+                <Route path="/" component={MainScreen} />
+                <Route path="/weight" component={WeeklyWeightScreen} />
+                <Route path="/meeting" component={WeightPresentationScreen} />
+                <Route path="/management" component={ManagementScreen} />
+                <Route path="/newuser" component={NewUserScreen} />
+                <Route path="/groups" component={GroupsScreen} metadata={group}/>
+                <Route path="/group" component={EntityForm} metadata={group}>
+                    <Route path="/group/:entityKey" component={EntityForm} metadata={group}/>
+                </Route>
+            </Router>
+            <Footer />
+        </div>,
     document.getElementById('root')
-)
+    )
+
+})();
 
 
 // WEBPACK FOOTER //
 // ./app.js
 
 
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
 
 
 // WEBPACK FOOTER //
