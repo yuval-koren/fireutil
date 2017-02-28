@@ -393,8 +393,8 @@ class EntityForm extends React.Component {
 
         let fire = fb.fb();
         this.metadata = this.takeParams('metadata');
-
-        this.entityAPI = fire.registerSingle(this, fb.metadata()[this.entityName], this.takeParams('entityKey'));
+        this.keyArray = this.takeParams('keyArray');
+        this.entityAPI = fire.registerSingle(this, fb.metadata()[this.entityName], this.takeParams('entityKey'), this.keyArray);
     }
 
     componentWillUnmount() {
@@ -419,6 +419,7 @@ class EntityForm extends React.Component {
         this.entityAPI.save(this.state[this.entityName]);
     }
 
+
     render() {
         let fields = this.metadata.fields.map((field) => {
             if (field.type==='string') {
@@ -442,6 +443,7 @@ class EntityForm extends React.Component {
                 {fields}
 
                 <button onClick={this.handleSubmit}>Submit</button>                
+
             </div>
         );
     }
@@ -453,48 +455,60 @@ class GroupsScreen extends React.Component {
         super(props);
 
         this.onSelect = this.onSelect.bind(this);
+        this.newEntity = this.newEntity.bind(this);
     }
 
 
 
     // takes parameter from props or props.params
     takeParams(param) {
-        let pval = this.props[param];
+        // first try to take from props
+        let parameterValue = this.props[param];
 
-        if (!pval && this.props.params) {
-            pval = this.props.params[param];
+        // try to take from url
+        if (!parameterValue && this.props.params) {
+            parameterValue = this.props.params[param];
         } 
 
-        if (!pval && this.props.route) {
-            pval = this.props.route[param];
+        // try to take from router props
+        if (!parameterValue && this.props.route) {
+            parameterValue = this.props.route[param];
         } 
 
-        return pval;
+        return parameterValue;
     }
 
 
     componentWillMount() {
-        this.state = {group: {}};
         this.metadata = this.takeParams('metadata');
-        this.fire = fb.fb();
-        this.group_api = this.fire.registerList(this, fb.metadata()['group']);
+        let stateObj = {}
+        stateObj[this.metadata.name] = {}
+        this.state = stateObj;
+
+        this.keyArray = this.takeParams('keyArray');
+        this.entityApi = fb.fb().registerList(this, this.metadata, this.keyArray);
     }
 
     componentWillUnmount() {
-        this.group_api.unregister();
+        this.entityApi.unregister();
     }
 
     onSelect(key) {
         this.setState({selected: key});
     }
 
+    newEntity() {
+        this.setState({selected: ''});
+    }
+
     render() {
         return (
             <div>
                 <Mock name="Title: Groups" />
+                <button onClick={this.newEntity}>New</button>
 
-                <TTable onSelect={this.onSelect} metadata={this.metadata} list={this.state.group} />  
-                <EntityForm metadata={fb.metadata().group} key={this.state.selected} entityKey={this.state.selected} />
+                <TTable onSelect={this.onSelect} metadata={this.metadata} list={this.state[this.metadata.name]} />  
+                <EntityForm metadata={this.metadata} key={this.state.selected} entityKey={this.state.selected} keyArray={this.keyArray}/>
  
                 <Mock name="button: Select Active group" />                
                 <div>Selected key is: {this.state.selected}</div>
@@ -693,6 +707,7 @@ DateField.defaultProps = {
 (function() {
     let fire = fb.fb();
     let group = fb.metadata()['group'];
+    let user = fb.metadata()['user'];
 
     ReactDOM.render(
         <div>
@@ -703,7 +718,7 @@ DateField.defaultProps = {
                 <Route path="/meeting" component={WeightPresentationScreen} />
                 <Route path="/management" component={ManagementScreen} />
                 <Route path="/newuser" component={NewUserScreen} />
-                <Route path="/groups" component={GroupsScreen} metadata={group}/>
+                <Route path="/groups" component={GroupsScreen} metadata={user} keyArray={{key0: 'k123'}}/>
                 <Route path="/group" component={EntityForm} metadata={group}>
                     <Route path="/group/:entityKey" component={EntityForm} metadata={group}/>
                 </Route>
@@ -720,6 +735,10 @@ DateField.defaultProps = {
 // ./app.js
 
 
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //

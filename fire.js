@@ -35,7 +35,7 @@ var group_md = {
 
 var user_md = {
     name: 'user',
-    path: '{0}/users',
+    path: '<%= key0 %>/users',
     type: 'list',
     fields: [
         {
@@ -122,7 +122,7 @@ export class FireBaseUtils {
         let regInfo = this.singleRegisters[path];
         _.forEach(regInfo.components, (component) => {
             if (entity.key===regInfo.entityKey) {
-                this.updateState(regInfo.entityName, component, list);
+                this.updateState(regInfo.entityName, component, entity);
             }
         })
     }
@@ -224,14 +224,14 @@ export class FireBaseUtils {
             return {
                 unregister: () => {},
                 save: (entity) => {
-                    var newKey = this.db.ref().child(regInfo.path).push().key;
+                    var newKey = this.db.ref().child(path).push().key;
                     entity.key = newKey;
                     this.db.ref(path+'/'+entity.key).set(entity);
                 }
             }
         }
 
-        let regInfo = this.registerPath(this.singleRegisters, component, metadata, keyArray, true, key);
+        var regInfo = this.registerPath(this.singleRegisters, component, metadata, keyArray, true, key);
         this.registerSingleEntityForFireBaseChanges(regInfo.path);     
         regInfo.entityKey = key;
         
@@ -266,6 +266,10 @@ export function fb() {
 export function metadata() {
     return entities;
 }
+
+
+// WEBPACK FOOTER //
+// ./fire.js
 
 
 // WEBPACK FOOTER //
