@@ -15,206 +15,6 @@ import * as fb from './fire';
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
 
-class MyComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.incStatus = this.incStatus.bind(this);
-        this.state = {
-            count: 0
-        }    
-    }
-
-    incStatus() {
-        this.setState({
-            count: this.state.count + 1
-        });
-    }
-
-    render() {
-        return (
-            <div>
-                <h1>Hello, world!!</h1>
-                <p>using some prop named: {this.props.name}</p>
-                <p>count= {this.state.count}</p>
-                <button type="button" onClick={this.incStatus}>increment</button>
-            </div>
-        );
-    }
-}
-
-
-class SelectField extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            edit: this.props.initInEdit,
-            value: props.entity.get(props.item)
-        }
-
-        if (!this.state.value) {
-            this.state.value = this.props.tempValue;
-        }
-
-        this.changeStateToEditMode = this.changeStateToEditMode.bind(this);
-        this.changeStateToReadMode = this.changeStateToReadMode.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.handleKeyUp = this.handleKeyUp.bind(this);
-    }
-
-    changeStateToEditMode() {
-        if (!this.props.editable) {return; }
-        this.setState({edit: true});
-    }
-
-    changeStateToReadMode() {
-        
-        this.setState({edit: false});
-    }
-
-    handleKeyUp(event) {
-        if (event.keyCode == 13) {
-            if (this.state.edit) {
-                this.handleSubmit();
-            } else {
-                this.changeStateToEditMode();
-            }
-        }
-    }
-
-    handleChange(event) {
-        this.setState({value: event.target.value});
-    }
-
-    handleSubmit() {
-        this.changeStateToReadMode();
-        let isValueSameAsTempInitialValue = this.state.value == this.props.tempValue;
-        if (isValueSameAsTempInitialValue) {
-            return;
-        }
-        let newValue = this.props.entity.set(this.props.item, this.state.value);
-        this.props.saveFunc(newValue);
-    }
-
-    render() {
-        return (
-            <div tabIndex='0' onKeyUp={this.handleKeyUp}>
-                {this.state.edit ? (
-                    <select value={this.state.value} onChange={this.handleChange} onBlur={this.handleSubmit}>
-                        {this.props.list.map((item)=>
-                            <option value={item.get('key')}>{item.get(this.props.label)}</option>
-                        )}
-                    </select>
-                ) : (
-                    <div onClick={this.changeStateToEditMode}>
-                        {this.state.value}
-                    </div>
-                )}
-            </div>
-        );
-    }
-}
-
-SelectField.defaultProps = {
-    initInEdit: false,
-    editable: true,
-    tempValue: '[empty]'
-}
-
-SelectField.PropTypes = {
-    item: React.PropTypes.string.isRequired,
-    entity: React.PropTypes.any.isRequired,
-}
-
-
-
-class Field extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            edit: this.props.initInEdit,
-            value: props.entity.get(props.item)
-        }
-
-        if (!this.state.value) {
-            this.state.value = this.props.tempValue;
-        }
-
-        this.changeStateToEditMode = this.changeStateToEditMode.bind(this);
-        this.changeStateToReadMode = this.changeStateToReadMode.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.handleKeyUp = this.handleKeyUp.bind(this);
-    }
-
-    changeStateToEditMode() {
-        if (!this.props.editable) {return; }
-        this.setState({edit: true});
-    }
-
-    changeStateToReadMode() {
-        
-        this.setState({edit: false});
-    }
-
-    handleKeyUp(event) {
-        if (event.keyCode == 13) {
-            if (this.state.edit) {
-                this.handleSubmit();
-            } else {
-                this.changeStateToEditMode();
-            }
-        }
-    }
-
-    handleChange(event) {
-        this.setState({value: event.target.value});
-    }
-
-    handleSubmit() {
-        this.changeStateToReadMode();
-        let isValueSameAsTempInitialValue = this.state.value == this.props.tempValue;
-        if (isValueSameAsTempInitialValue) {
-            return;
-        }
-        let newValue = this.props.entity.set(this.props.item, this.state.value);
-        this.props.saveFunc(newValue);
-    }
-
-    render() {
-        return (
-            <div tabIndex='0' onKeyUp={this.handleKeyUp}>
-                {this.state.edit ? (
-                    <input type="text" value={this.state.value} autoFocus 
-                        onChange={this.handleChange} 
-                        onBlur={this.handleSubmit}
-                    />
-                ) : (
-                    <div onClick={this.changeStateToEditMode}>
-                        {this.state.value}
-                    </div>
-                )}
-            </div>
-        );
-    }
-}
-
-Field.defaultProps = {
-    initInEdit: false,
-    editable: true,
-    tempValue: '[empty]'
-}
-
-Field.PropTypes = {
-    item: React.PropTypes.string.isRequired,
-    entity: React.PropTypes.any.isRequired,
-}
-
-
-
-
 
 class Footer extends React.Component {
     constructor(props) {
@@ -434,6 +234,26 @@ class EntityForm extends React.Component {
                         <DateField update={this.updateValue} field={field.fname} format={field.options.format} initValue={this.state[this.entityName][field.fname]} />
                     </NamedField>
                 );
+            } else if (field.type==='number') {
+                return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        <NumberField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} />
+                    </NamedField>
+                );
+            } else if (field.type==='list') {
+                return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        <ListField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} list={field.options.items} />
+                    </NamedField>
+                );
+            } else if (field.type==='ref') {
+                return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        <DBM metadata={field.options.ref} keyArray={{group: 'k123'}}>
+                            <RefField2 update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]}/>
+                        </DBM>
+                    </NamedField>
+                );
             };
         });
         return (
@@ -449,16 +269,19 @@ class EntityForm extends React.Component {
     }
 }
 
-
-class GroupsScreen extends React.Component {
+/****************************
+input prop:
+- metadata (of list)
+- keyArray
+output prop(to children)
+- metadata
+- keyArray
+- list
+*****************************/
+class DBM extends React.Component {
     constructor(props) {
         super(props);
-
-        this.onSelect = this.onSelect.bind(this);
-        this.newEntity = this.newEntity.bind(this);
     }
-
-
 
     // takes parameter from props or props.params
     takeParams(param) {
@@ -478,19 +301,40 @@ class GroupsScreen extends React.Component {
         return parameterValue;
     }
 
-
     componentWillMount() {
         this.metadata = this.takeParams('metadata');
+        this.keyArray = this.takeParams('keyArray');
+
         let stateObj = {}
-        stateObj[this.metadata.name] = {}
+        stateObj[this.metadata.name] = [];
         this.state = stateObj;
 
-        this.keyArray = this.takeParams('keyArray');
         this.entityApi = fb.fb().registerList(this, this.metadata, this.keyArray);
     }
 
     componentWillUnmount() {
         this.entityApi.unregister();
+    }
+
+    render() {
+        return React.cloneElement(React.Children.only(this.props.children),
+        {
+            metadata: this.metadata,
+            keyArray: this.keyArray,
+            list: this.state[this.metadata.name],
+
+        });
+    }    
+}
+
+
+class EntityManagementScreen2 extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.onSelect = this.onSelect.bind(this);
+        this.newEntity = this.newEntity.bind(this);
+        this.state = {};
     }
 
     onSelect(key) {
@@ -507,8 +351,8 @@ class GroupsScreen extends React.Component {
                 <Mock name="Title: Groups" />
                 <button onClick={this.newEntity}>New</button>
 
-                <TTable onSelect={this.onSelect} metadata={this.metadata} list={this.state[this.metadata.name]} />  
-                <EntityForm metadata={this.metadata} key={this.state.selected} entityKey={this.state.selected} keyArray={this.keyArray}/>
+                <TTable onSelect={this.onSelect} metadata={this.props.metadata} list={this.props.list} />  
+                <EntityForm metadata={this.props.metadata} key={this.state.selected} entityKey={this.state.selected} keyArray={this.props.keyArray}/>
  
                 <Mock name="button: Select Active group" />                
                 <div>Selected key is: {this.state.selected}</div>
@@ -518,12 +362,23 @@ class GroupsScreen extends React.Component {
 }
 
 
+
 class TTable extends React.Component {
     constructor(props) {
         super(props);
 
         this.metadata = props.metadata;
         this.list = props.list;
+
+
+    }
+
+    getAllReferences(metadata, keyArray) {
+        metadata.fields.forEach((field)=> {
+            if (field.type==='ref') {
+                this.registerList(this, field.options.ref, keyArray);
+            }
+        })
     }
 
     render() {
@@ -532,7 +387,7 @@ class TTable extends React.Component {
                 <table>
                     <THeaderRow metadata={this.props.metadata} />
                     {this.props.list.map((row) => (
-                        <TRow onSelect={this.props.onSelect} key={row.key} entity={row} metadata={this.props.metadata} />
+                        <TRow onSelect={this.props.onSelect} key={row.key} entity={row} metadata={this.props.metadata} ref={this.state}/>
                     ))}
                 </table>
             </div>
@@ -564,13 +419,26 @@ class TRow extends React.Component {
         super(props);
     }
 
+    //todo: see why below does not work
+    findRefName(key, entityName, displayField) {
+        return _.find(this.state[entityName], (item) => item.key === key)[displayField];
+    }
+
     render() {
         return (
             <tbody>
                 <tr onClick={()=>this.props.onSelect(this.props.entity.key)}>
-                    {this.props.metadata.fields.map((field) => (
-                        <td key={field.fname}>{this.props.entity[field.fname]}</td>
-                    ))}
+                    {this.props.metadata.fields.map((field) => {
+                        //if (field.type === 'ref') {
+                        //    return (   //todo: name is hardcoded
+                        //        <td key={field.fname}>{this.findRefName(this.props.entity[field.fname], field.options.ref.fname, 'name')}</td>
+                        //    )
+                        //} else {
+                            return (
+                                <td key={field.fname}>{this.props.entity[field.fname]}</td>
+                            )
+                        //}
+                    })}
                 </tr>
             </tbody>
         )                
@@ -629,6 +497,156 @@ class NamedField extends React.Component {
     }
     
 }
+
+
+class ListField extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {value: this.props.initValue};
+        this.updateValue = this.updateValue.bind(this);
+    }
+
+    updateValue(event) {
+        this.setState({value: event.target.value});
+        if (this.props.update) {
+            this.props.update(event.target.value, this.props.field);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: nextProps.initValue});
+    }
+
+    render() {
+        
+        return (
+            <select value={this.state.value} onChange={this.updateValue}>
+                {this.props.list.map((item)=>(
+                    <option key={item}>{item}</option>
+                ))}
+            </select>
+        )
+    }
+}
+
+
+
+class RefField2 extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {value: this.props.initValue};
+        this.updateValue = this.updateValue.bind(this);
+        
+    }
+
+    updateValue(event) {
+        this.setState({value: event.target.value});
+        if (this.props.update) {
+            this.props.update(event.target.value, this.props.field);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: nextProps.initValue});
+    }
+
+    render() {
+        
+        return (
+            <select value={this.state.value} onChange={this.updateValue}>
+                {this.props.list.map((item)=>(
+                    <option key={item.key} value={item.key}>{item.name}</option>
+                ))}
+            </select>
+        )
+    }
+}
+
+
+
+class RefField extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {value: this.props.initValue};
+        this.updateValue = this.updateValue.bind(this);
+
+        this.fillEntityList(this.props.refMetadata, this.props.refKeyArray);
+        
+    }
+
+    updateValue(event) {
+        this.setState({value: event.target.value});
+        if (this.props.update) {
+            this.props.update(event.target.value, this.props.field);
+        }
+    }
+
+
+    componentWillMount() {
+        this.entityApi = fb.fb().registerList(this, this.props.refMetadata, this.props.refKeyArray);
+    }
+
+    componentWillUnmount() {
+        this.entityApi.unregister();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: nextProps.initValue});
+        this.fillEntityList(nextProps.refMetadata, nextProps.refKeyArray);
+    }
+
+    fillEntityList(metadata, keyArray) {
+        this.list = fb.fb().getIndex(metadata, keyArray);
+    }
+
+    render() {
+        
+        return (
+            <select value={this.state.value} onChange={this.updateValue}>
+                {this.state[this.props.refMetadata.name].map((item)=>(
+                    <option key={item.key} value={item.key}>{item.name}</option>
+                ))}
+            </select>
+        )
+    }
+}
+
+
+
+class NumberField extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {value: Number(this.props.initValue)};
+        this.updateValue = this.updateValue.bind(this);
+    }
+
+    updateValue(event) {
+        this.setState({value: Number(event.target.value)});
+        if (this.props.update) {
+            this.props.update(Number(event.target.value), this.props.field);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: Number(nextProps.initValue)});
+    }
+
+    render() {
+        return (
+            <input type='number' value={Number(this.state.value)} onChange={this.updateValue} placeholder={this.props.placeholder} />
+        )
+    }
+}
+
+NumberField.defaultProps = {
+    placeholder: '',
+    initValue: ''
+}
+
 
 class TextField extends React.Component {
     constructor(props) {
@@ -704,24 +722,74 @@ DateField.defaultProps = {
 };
 
 
+class WeightScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <DBM metadata={fb.metadata()['weight']} keyArray={{group: 'k123'}}>
+                <EntityManagementScreen2/>
+            </DBM>
+        )
+    }
+}
+
+
+
+class UsersScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <DBM metadata={fb.metadata()['user']} keyArray={{group: 'k123'}}>
+                <EntityManagementScreen2/>
+            </DBM>
+        )
+    }
+}
+
+
+
+class GroupsScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        let html = 
+        (
+            <DBM metadata={fb.metadata()['group']}>
+                <EntityManagementScreen2/>
+            </DBM>
+        );
+
+        return html;
+    }
+}
+
+
+
+
 (function() {
     let fire = fb.fb();
     let group = fb.metadata()['group'];
     let user = fb.metadata()['user'];
+    let weight = fb.metadata()['weight'];
 
     ReactDOM.render(
         <div>
             <Header />
             <Router history={hashHistory}>
                 <Route path="/" component={MainScreen} />
-                <Route path="/weight" component={WeeklyWeightScreen} />
+                <Route path="/weight" component={WeightScreen} />
                 <Route path="/meeting" component={WeightPresentationScreen} />
                 <Route path="/management" component={ManagementScreen} />
-                <Route path="/newuser" component={NewUserScreen} />
-                <Route path="/groups" component={GroupsScreen} metadata={user} keyArray={{key0: 'k123'}}/>
-                <Route path="/group" component={EntityForm} metadata={group}>
-                    <Route path="/group/:entityKey" component={EntityForm} metadata={group}/>
-                </Route>
+                <Route path="/users" component={UsersScreen} />
+                <Route path="/groups" component={GroupsScreen} />
             </Router>
             <Footer />
         </div>,
@@ -735,6 +803,54 @@ DateField.defaultProps = {
 // ./app.js
 
 
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //

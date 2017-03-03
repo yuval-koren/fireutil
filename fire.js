@@ -7,7 +7,7 @@ import {Map, List} from 'immutable';
 import moment from 'moment';
 
 
-var group_md = {
+var groupMetadata = {
     name: 'group',
     path: 'groups',
     type: 'list',
@@ -33,9 +33,9 @@ var group_md = {
 }
 
 
-var user_md = {
+var userMetadata = {
     name: 'user',
-    path: '<%= key0 %>/users',
+    path: '<%= group %>/users',
     type: 'list',
     fields: [
         {
@@ -51,9 +51,44 @@ var user_md = {
     ]
 }
 
+var weightMetadata = {
+    name: 'weight',
+    path: '<%= group %>/weights',
+    type: 'list',
+    fields: [
+        {
+            desc: 'week',
+            type: 'number',
+            fname: 'week'
+        },
+        {
+            desc: 'User Name',
+            type: 'ref',
+            fname: 'nameKey',
+            options: {
+                ref: userMetadata,
+            }
+        },
+        {
+            desc: 'weight',
+            type: 'number',
+            fname: 'weight',
+        },
+        {
+            desc: 'status',
+            type: 'list',
+            fname: 'status',
+            options: {
+                items: ['absent', 'vacation', 'won', 'lost', ],
+            }
+        }
+    ]
+}
+
 let entities = {
-    group: group_md,
-    user: user_md,
+    group: groupMetadata,
+    user: userMetadata,
+    weight: weightMetadata,
 };
 
 
@@ -150,7 +185,13 @@ export class FireBaseUtils {
             return entity;
     }
 
-    registerSingleEntityForFireBaseChanges(path, single) {
+    registerSingleEntityForFireBaseChanges(path) {
+        // firebase already keeps track on this path.
+        if (this.singleRegisters[path]) {
+            return;
+        }
+
+        this.index[path] = [];
         let firebaseReference = this.db.ref(path);
 
         firebaseReference.on('value', (data) => {   
@@ -162,6 +203,12 @@ export class FireBaseUtils {
 
 
     registerEntityListForFireBaseChanges(path) {
+        // firebase already keeps track on this path.
+        if (this.listRegisters[path]) {
+            return;
+        }
+
+        this.index[path] = [];
         let firebaseReference = this.db.ref(path);
 
         firebaseReference.on('child_added', (data) => {   
@@ -181,10 +228,7 @@ export class FireBaseUtils {
 
 
     // register or retrieve from cache if already registered
-    registerPath(list, component, metadata, keyArray, single, entityKey) {
-        let path = this.getPath(metadata, keyArray, entityKey);
-
-        this.index[path] = [];
+    registerPath(list, component, metadata, path) {
 
         if (list[path]) {
             list[path].components.push(component);
@@ -203,8 +247,10 @@ export class FireBaseUtils {
 
     registerList(component, metadata, keyArray) {
 
-        let regInfo = this.registerPath(this.listRegisters, component, metadata, keyArray, false);
-        this.registerEntityListForFireBaseChanges(regInfo.path);
+        //order of two next statements is important. (fb doesn't add listener if path is already registered)
+        let path = this.getPath(metadata, keyArray);
+        this.registerEntityListForFireBaseChanges(path);
+        let regInfo = this.registerPath(this.listRegisters, component, metadata, path);
 
         component.state[regInfo.entityName] = _.clone(this.index[regInfo.path]);
 
@@ -219,8 +265,8 @@ export class FireBaseUtils {
     }
 
     registerSingle(component, metadata, key, keyArray) {
-        if (!key) {
-            let path = this.getPath(metadata, keyArray, key);
+        let path = this.getPath(metadata, keyArray, key);
+        if (!key) {    
             return {
                 unregister: () => {},
                 save: (entity) => {
@@ -231,8 +277,8 @@ export class FireBaseUtils {
             }
         }
 
-        var regInfo = this.registerPath(this.singleRegisters, component, metadata, keyArray, true, key);
-        this.registerSingleEntityForFireBaseChanges(regInfo.path);     
+        this.registerSingleEntityForFireBaseChanges(path);     
+        var regInfo = this.registerPath(this.singleRegisters, component, metadata, path);
         regInfo.entityKey = key;
         
         // update now the state
@@ -254,6 +300,12 @@ export class FireBaseUtils {
                 
             }
         }    
+    }
+
+    getIndex(metadata, keyArray) {
+        let path = this.getPath(metadata, keyArray);
+
+        return this.index[path];
     }
 }
 
