@@ -154,107 +154,56 @@ class NewUserScreen extends React.Component {
 
 
 
-class EntityForm extends React.Component {
+class EntityForm2 extends React.Component {
     constructor(props) {
         super(props);
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateValue = this.updateValue.bind(this);
-        this.takeParams = this.takeParams.bind(this);
         this.entityName = this.props.metadata.name;
-    }
-
-    createInitialState() {
-        let state = {};
-        state[this.entityName] = {};
-        return state;
-    }
-
-    // takes parameter from props or props.params
-    takeParams(param) {
-        // first try to take from props
-        let parameterValue = this.props[param];
-
-        // try to take from url
-        if (!parameterValue && this.props.params) {
-            parameterValue = this.props.params[param];
+        this.state = {
+            entity: this.props.entity
         } 
-
-        // try to take from router props
-        if (!parameterValue && this.props.route) {
-            parameterValue = this.props.route[param];
-        } 
-
-        return parameterValue;
-    }
-
-    componentWillMount() {
-        this.state = this.createInitialState();
-
-        let fire = fb.fb();
-        this.metadata = this.takeParams('metadata');
-        this.keyArray = this.takeParams('keyArray');
-        this.entityAPI = fire.registerSingle(this, fb.metadata()[this.entityName], this.takeParams('entityKey'), this.keyArray);
-    }
-
-    componentWillUnmount() {
-        this.entityAPI.unregister();
     }
 
     componentWillReceiveProps(nextProps) {
-        var a =10;
+        this.setState({entity: nextProps.entity});
     }
 
-
     updateValue(value, field) {
-        let stateUpdate = this.state[this.entityName];
+        let stateUpdate = this.state.entity;
         stateUpdate[field]=value;
-
-        let updateField = {}
-        updateField[this.entityName] = stateUpdate
-        this.setState(updateField);
+        this.setState({entity: stateUpdate});
     }
 
     handleSubmit(event) {
-        this.entityAPI.save(this.state[this.entityName]);
+        this.props.save(this.state.entity);
     }
 
 
     render() {
-        let fields = this.metadata.fields.map((field) => {
+        let fields = this.props.metadata.fields.map((field) => {
+            let input = <div>unknown type</div>
+
             if (field.type==='string') {
-                return (
-                    <NamedField key={field.fname} name={field.desc}> 
-                        <TextField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} />
-                    </NamedField>
-                );
-            } else if (field.type==='date') {
-                return (
-                    <NamedField key={field.fname} name={field.desc}> 
-                        <DateField update={this.updateValue} field={field.fname} format={field.options.format} initValue={this.state[this.entityName][field.fname]} />
-                    </NamedField>
-                );
+                input = <TextField update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]} />
             } else if (field.type==='number') {
-                return (
-                    <NamedField key={field.fname} name={field.desc}> 
-                        <NumberField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} />
-                    </NamedField>
-                );
+                input = <NumberField update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]} />
+            } else if (field.type==='date') {
+                input = <DateField update={this.updateValue} field={field.fname} format={field.options.format} initValue={this.state.entity[field.fname]} />
             } else if (field.type==='list') {
-                return (
-                    <NamedField key={field.fname} name={field.desc}> 
-                        <ListField update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]} list={field.options.items} />
-                    </NamedField>
-                );
+                input = <ListField update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]} list={field.options.items} />
             } else if (field.type==='ref') {
-                return (
-                    <NamedField key={field.fname} name={field.desc}> 
-                        <DBM metadata={field.options.ref} keyArray={{group: 'k123'}}>
-                            <RefField2 update={this.updateValue} field={field.fname} initValue={this.state[this.entityName][field.fname]}/>
+                input = <DBM metadata={field.options.ref} keyArray={{group: 'k123'}}>
+                            <RefField2 update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]}/>
                         </DBM>
-                    </NamedField>
-                );
             };
+
+            return (
+                    <NamedField key={field.fname} name={field.desc}> 
+                        {input}
+                    </NamedField>                
+            )
         });
         return (
             <div>
@@ -269,14 +218,17 @@ class EntityForm extends React.Component {
     }
 }
 
+
+
 /****************************
 input prop:
 - metadata (of list)
 - keyArray
+- entityKey (optional - for single entity)
 output prop(to children)
 - metadata
 - keyArray
-- list
+- list/entity
 *****************************/
 class DBM extends React.Component {
     constructor(props) {
@@ -304,26 +256,42 @@ class DBM extends React.Component {
     componentWillMount() {
         this.metadata = this.takeParams('metadata');
         this.keyArray = this.takeParams('keyArray');
+        //only if single entity
+        this.entityKey = this.takeParams('entityKey'); 
+        this.isSingle = this.takeParams('isSingle');
 
         let stateObj = {}
         stateObj[this.metadata.name] = [];
         this.state = stateObj;
 
-        this.entityApi = fb.fb().registerList(this, this.metadata, this.keyArray);
+        if (this.isSingle) {
+            this.entityApi = fb.fb().registerSingle(this, this.metadata, this.entityKey, this.keyArray);
+        } else {
+            this.entityApi = fb.fb().registerList(this, this.metadata, this.keyArray);
+        }
+        
     }
+    
 
     componentWillUnmount() {
         this.entityApi.unregister();
     }
 
     render() {
-        return React.cloneElement(React.Children.only(this.props.children),
-        {
+        let extraData = this.isSingle ? {
+            // extra data for single entity
+            metadata: this.metadata,
+            keyArray: this.keyArray,
+            entity: this.state[this.metadata.name],
+            save: this.entityApi.save,
+        } : {
+            // extra data for list
             metadata: this.metadata,
             keyArray: this.keyArray,
             list: this.state[this.metadata.name],
+        }
 
-        });
+        return React.cloneElement(React.Children.only(this.props.children), extraData);
     }    
 }
 
@@ -352,7 +320,9 @@ class EntityManagementScreen2 extends React.Component {
                 <button onClick={this.newEntity}>New</button>
 
                 <TTable onSelect={this.onSelect} metadata={this.props.metadata} list={this.props.list} />  
-                <EntityForm metadata={this.props.metadata} key={this.state.selected} entityKey={this.state.selected} keyArray={this.props.keyArray}/>
+                <DBM metadata={this.props.metadata} key={this.state.selected} entityKey={this.state.selected} keyArray={this.props.keyArray} isSingle={true}>
+                    <EntityForm2/>
+                </DBM>
  
                 <Mock name="button: Select Active group" />                
                 <div>Selected key is: {this.state.selected}</div>
@@ -803,6 +773,10 @@ class GroupsScreen extends React.Component {
 // ./app.js
 
 
+
+
+// WEBPACK FOOTER //
+// ./app.js
 
 
 // WEBPACK FOOTER //
