@@ -6,17 +6,12 @@ import _ from 'lodash';
 import {Map, List} from 'immutable';
 import moment from 'moment';
 import metadata from './metadata';
+import dbconfig from './dbconfig';
+import firebaseui from 'firebaseui';
+
 
 export class FireBaseUtils {
-    constructor() {
-            
-        var config = {
-            apiKey: "AIzaSyDZGp5jLl_E6xYdDROfqfXqH6fBx70ZqVs",
-            authDomain: "looseandwin.firebaseapp.com",
-            databaseURL: "https://looseandwin.firebaseio.com",
-            storageBucket: "project-6410405059481098151.appspot.com",
-            messagingSenderId: "512733212020"
-        };
+    constructor(config) {
 
         this.state = { };
         this.index = [];
@@ -25,13 +20,11 @@ export class FireBaseUtils {
       
         firebase.initializeApp(config);
         this.db = firebase.database();
+        this.ui = new firebaseui.auth.AuthUI(firebase.auth());
  
         this.registerSingle = this.registerSingle.bind(this);
         this.registerList = this.registerList.bind(this);
-        this.prepareEntity = this.prepareEntity.bind(this);
-        //this.users = this.registerEntity(this.state, 'users');
-        //this.weeks = this.registerEntity(this.state, 'weeks');
-        
+        this.prepareEntity = this.prepareEntity.bind(this);        
     }
 
     updateState(entityName, component, value) {
@@ -222,9 +215,13 @@ export class FireBaseUtils {
 
         return this.index[path];
     }
+
+    login = (id, uiConfig) => {
+        this.ui.start(id, uiConfig);
+    }
 }
 
-const firebaseutil = new FireBaseUtils();
+const firebaseutil = new FireBaseUtils(dbconfig);
 
 export default firebaseutil;
 
