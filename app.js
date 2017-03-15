@@ -11,7 +11,8 @@ import _ from 'lodash';
 import {Map, List} from 'immutable';
 import {Router, Route, hashHistory } from 'react-router';
 import moment from 'moment';
-import * as fb from './utils/fire';
+import fb from './utils/fire';
+import metadata from './utils/metadata';
 import css from './firebaseui.css';
 import LoginScreen from './components/loginScreen';
 
@@ -200,7 +201,7 @@ class EntityForm2 extends React.Component {
             } else if (field.type==='list') {
                 input = <ListField update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]} list={field.options.items} />
             } else if (field.type==='ref') {
-                input = <DBM metadata={field.options.ref} keyArray={{group: 'k123'}}>
+                input = <DBM metadata={metadata[field.options.ref]} keyArray={{group: 'k123'}}>
                             <RefField2 update={this.updateValue} field={field.fname} initValue={this.state.entity[field.fname]}/>
                         </DBM>
             };
@@ -271,9 +272,9 @@ class DBM extends React.Component {
         this.state = stateObj;
 
         if (this.isSingle) {
-            this.entityApi = fb.fb().registerSingle(this, this.metadata, this.entityKey, this.keyArray);
+            this.entityApi = fb.registerSingle(this, this.metadata, this.entityKey, this.keyArray);
         } else {
-            this.entityApi = fb.fb().registerList(this, this.metadata, this.keyArray);
+            this.entityApi = fb.registerList(this, this.metadata, this.keyArray);
         }
         
     }
@@ -352,7 +353,7 @@ class TTable extends React.Component {
     getAllReferences(metadata, keyArray) {
         metadata.fields.forEach((field)=> {
             if (field.type==='ref') {
-                this.registerList(this, field.options.ref, keyArray);
+                this.registerList(this, metadata[field.options.ref], keyArray);
             }
         })
     }
@@ -562,7 +563,7 @@ class RefField extends React.Component {
 
 
     componentWillMount() {
-        this.entityApi = fb.fb().registerList(this, this.props.refMetadata, this.props.refKeyArray);
+        this.entityApi = fb.registerList(this, this.props.refMetadata, this.props.refKeyArray);
     }
 
     componentWillUnmount() {
@@ -575,7 +576,7 @@ class RefField extends React.Component {
     }
 
     fillEntityList(metadata, keyArray) {
-        this.list = fb.fb().getIndex(metadata, keyArray);
+        this.list = fb.getIndex(metadata, keyArray);
     }
 
     render() {
@@ -705,7 +706,7 @@ class WeightScreen extends React.Component {
 
     render() {
         return (
-            <DBM metadata={fb.metadata()['weight']} keyArray={{group: 'k123'}}>
+            <DBM metadata={metadata.weight} keyArray={{group: 'k123'}}>
                 <EntityManagementScreen2/>
             </DBM>
         )
@@ -721,7 +722,7 @@ class UsersScreen extends React.Component {
 
     render() {
         return (
-            <DBM metadata={fb.metadata()['user']} keyArray={{group: 'k123'}}>
+            <DBM metadata={metadata.user} keyArray={{group: 'k123'}}>
                 <EntityManagementScreen2/>
             </DBM>
         )
@@ -738,7 +739,7 @@ class GroupsScreen extends React.Component {
     render() {
         let html = 
         (
-            <DBM metadata={fb.metadata()['group']}>
+            <DBM metadata={metadata.group}>
                 <EntityManagementScreen2/>
             </DBM>
         );
@@ -751,10 +752,6 @@ class GroupsScreen extends React.Component {
 
 
 (function() {
-    let fire = fb.fb();
-    let group = fb.metadata()['group'];
-    let user = fb.metadata()['user'];
-    let weight = fb.metadata()['weight'];
 
     ReactDOM.render(
         <div>
@@ -775,92 +772,3 @@ class GroupsScreen extends React.Component {
 
 })();
 
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
-
-
-// WEBPACK FOOTER //
-// ./app.js
