@@ -4,16 +4,21 @@ import * as greeter from './content';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
+import firebaseui from 'firebaseui';
 import database from 'firebase';
 //import update from 'immutability-helper';
 import _ from 'lodash';
 import {Map, List} from 'immutable';
 import {Router, Route, hashHistory } from 'react-router';
 import moment from 'moment';
-import * as fb from './fire';
+import * as fb from './utils/fire';
+import css from './firebaseui.css';
+import LoginScreen from './components/loginScreen';
+
 
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
+  
 
 
 class Footer extends React.Component {
@@ -151,6 +156,7 @@ class NewUserScreen extends React.Component {
         );
     }
 }
+
 
 
 
@@ -760,6 +766,7 @@ class GroupsScreen extends React.Component {
                 <Route path="/management" component={ManagementScreen} />
                 <Route path="/users" component={UsersScreen} />
                 <Route path="/groups" component={GroupsScreen} />
+                <Route path="/login" component={LoginScreen}/>
             </Router>
             <Footer />
         </div>,

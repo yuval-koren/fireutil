@@ -7,13 +7,13 @@ module.exports = {
         filename: "bundle.js"
     },
     resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
+        extensions: ['.webpack.js', '.web.js', '.ts', '.js']
     },
     module: {
         loaders: [
             { 
                 test: /\.css$/, 
-                loader: "style!css" ,
+                loader: "style-loader!css-loader" ,
                 exclude: /node_modules/
             },
 //            {
