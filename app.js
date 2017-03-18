@@ -15,6 +15,7 @@ import fb from './utils/fire';
 import metadata from './utils/metadata';
 import css from './firebaseui.css';
 import LoginScreen from './components/loginScreen';
+import uiConfig from './utils/authuiconfig';
 
 
 document.write("It works -> ");
@@ -40,15 +41,27 @@ class Footer extends React.Component {
 class Header extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {};
+    }
+
+    handleClick = () => {
+        if (!this.state.signedUser) {
+            fb.login('.loginButton', uiConfig, [this]);
+        } else {
+            fb.logout();
+        }
     }
 
     render() {
         return (
             <div>
                 <Mock name="<===== RZ icon and title ======>" />
-                <Mock name="login component" />
+                <Mock name="login component"  />
+                <button onClick={this.handleClick}>{this.state.signedUser ? 'logout' : 'login'}</button>
+                <div>{this.state.signedUser ? ('hello ' + this.state.signedUser.email) : 'Please log in'}</div>
+                <div className='loginButton'></div>
                 <Mock name="Links" />
-                <Mock name="================================" />
+                <Mock name="===============================" />
             </div>
         );
     }

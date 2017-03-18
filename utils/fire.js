@@ -20,8 +20,9 @@ export class FireBaseUtils {
       
         firebase.initializeApp(config);
         this.db = firebase.database();
-        this.ui = new firebaseui.auth.AuthUI(firebase.auth());
- 
+
+        this.initAndRegisterAuthenticationChanges();
+
         this.registerSingle = this.registerSingle.bind(this);
         this.registerList = this.registerList.bind(this);
         this.prepareEntity = this.prepareEntity.bind(this);        
@@ -216,8 +217,41 @@ export class FireBaseUtils {
         return this.index[path];
     }
 
-    login = (id, uiConfig) => {
-        this.ui.start(id, uiConfig);
+    /*************************************/
+    // Authntication Part
+    /*************************************/
+
+
+    initAndRegisterAuthenticationChanges() {
+        this.ui = new firebaseui.auth.AuthUI(firebase.auth());
+        this.userState = undefined;
+        firebase.auth().onAuthStateChanged((user)=>{
+            if (user) {
+                this.userState = user;
+                _.forEach(this.componentsToRefresh, (comp)=>{
+                    comp.setState({signedUser: user});
+                })
+            } else {
+                this.userState = undefined;
+                _.forEach(this.componentsToRefresh, (comp)=>{
+                    comp.setState({signedUser: undefined});
+                })
+            }
+        })
+
+    }
+
+    getUser = () => {
+        return this.userState;
+    }
+
+    login = (elementId, uiConfig, compArr) => {
+        this.ui.start(elementId, uiConfig);
+        this.componentsToRefresh = compArr;
+    }
+
+    logout = () => {
+        firebase.auth().signOut();
     }
 }
 

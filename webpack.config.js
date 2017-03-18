@@ -1,10 +1,10 @@
 module.exports = {
-    entry: "./app.js",
+    entry: './app.js',
     devtool: 'source-map',
-    devServer: { contentBase: ".", host:"localhost", port: 8080},
+    devServer: { contentBase: '.', host:'localhost', port: 3000},
     output: {
         path: __dirname+'/bin',
-        filename: "bundle.js"
+        filename: 'bundle.js'
     },
     resolve: {
         extensions: ['.webpack.js', '.web.js', '.ts', '.js']
