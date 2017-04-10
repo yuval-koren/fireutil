@@ -16,6 +16,9 @@ import metadata from './utils/metadata';
 import css from './firebaseui.css';
 import LoginScreen from './components/loginScreen';
 import uiConfig from './utils/authuiconfig';
+import { Provider } from 'react-redux';
+import store from './reducers/store';
+
 
 
 document.write("It works -> ");
@@ -767,19 +770,21 @@ class GroupsScreen extends React.Component {
 (function() {
 
     ReactDOM.render(
-        <div>
-            <Header />
-            <Router history={hashHistory}>
-                <Route path="/" component={MainScreen} />
-                <Route path="/weight" component={WeightScreen} />
-                <Route path="/meeting" component={WeightPresentationScreen} />
-                <Route path="/management" component={ManagementScreen} />
-                <Route path="/users" component={UsersScreen} />
-                <Route path="/groups" component={GroupsScreen} />
-                <Route path="/login" component={LoginScreen}/>
-            </Router>
-            <Footer />
-        </div>,
+        <Provider store={store} >
+            <div>
+                <Header />
+                <Router history={hashHistory}>
+                    <Route path="/" component={MainScreen} />
+                    <Route path="/weight" component={WeightScreen} />
+                    <Route path="/meeting" component={WeightPresentationScreen} />
+                    <Route path="/management" component={ManagementScreen} />
+                    <Route path="/users" component={UsersScreen} />
+                    <Route path="/groups" component={GroupsScreen} />
+                    <Route path="/login" component={LoginScreen}/>
+                </Router>
+                <Footer />
+            </div>
+        </Provider>,
     document.getElementById('root')
     )
 

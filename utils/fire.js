@@ -27,7 +27,7 @@ export class FireBaseUtils {
         this.registerList = this.registerList.bind(this);
         this.prepareEntity = this.prepareEntity.bind(this);        
     }
-
+ 
     updateState(entityName, component, value) {
         let newObject = {};
         newObject[entityName] = value;
@@ -227,6 +227,7 @@ export class FireBaseUtils {
         this.userState = undefined;
         firebase.auth().onAuthStateChanged((user)=>{
             if (user) {
+                
                 this.userState = user;
                 _.forEach(this.componentsToRefresh, (comp)=>{
                     comp.setState({signedUser: user});
