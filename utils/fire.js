@@ -8,7 +8,7 @@ import moment from 'moment';
 import metadata from './metadata';
 import dbconfig from './dbconfig';
 import firebaseui from 'firebaseui';
-
+import store from '../reducers/store'
 
 export class FireBaseUtils {
     constructor(config) {
@@ -227,16 +227,23 @@ export class FireBaseUtils {
         this.userState = undefined;
         firebase.auth().onAuthStateChanged((user)=>{
             if (user) {
-                
-                this.userState = user;
-                _.forEach(this.componentsToRefresh, (comp)=>{
-                    comp.setState({signedUser: user});
-                })
+                store.dispatch({
+                    type: 'login',
+                    signedUser: user,
+                });
+                //this.userState = user;
+                //_.forEach(this.componentsToRefresh, (comp)=>{
+                //    comp.setState({signedUser: user});
+                //})
             } else {
-                this.userState = undefined;
-                _.forEach(this.componentsToRefresh, (comp)=>{
-                    comp.setState({signedUser: undefined});
-                })
+                store.dispatch({
+                    type: 'logout',
+                });
+                
+                //this.userState = undefined;
+                //_.forEach(this.componentsToRefresh, (comp)=>{
+                //    comp.setState({signedUser: undefined});
+                //})
             }
         })
 
@@ -248,7 +255,7 @@ export class FireBaseUtils {
 
     login = (elementId, uiConfig, compArr) => {
         this.ui.start(elementId, uiConfig);
-        this.componentsToRefresh = compArr;
+        //this.componentsToRefresh = compArr;
     }
 
     logout = () => {

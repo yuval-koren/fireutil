@@ -8,22 +8,23 @@ import firebaseui from 'firebaseui';
 import database from 'firebase';
 //import update from 'immutability-helper';
 import _ from 'lodash';
-import {Map, List} from 'immutable';
-import {Router, Route, hashHistory } from 'react-router';
+import { Map, List} from 'immutable';
+import { Link, Route, BrowserRouter as Router } from 'react-router-dom';
+import createBrowserHistory from 'history/createBrowserHistory';
 import moment from 'moment';
 import fb from './utils/fire';
 import metadata from './utils/metadata';
 import css from './firebaseui.css';
 import LoginScreen from './components/loginScreen';
 import uiConfig from './utils/authuiconfig';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import store from './reducers/store';
-
+import Header from './components/header';
+import Mock from './components/mock';
 
 
 document.write("It works -> ");
 document.write(greeter.greet("yuval"));
-  
 
 
 class Footer extends React.Component {
@@ -35,36 +36,6 @@ class Footer extends React.Component {
         return (
             <div>
                 <Mock name="<===== FOOTER =====>" />
-            </div>
-        );
-    }
-}
-
-
-class Header extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
-    handleClick = () => {
-        if (!this.state.signedUser) {
-            fb.login('.loginButton', uiConfig, [this]);
-        } else {
-            fb.logout();
-        }
-    }
-
-    render() {
-        return (
-            <div>
-                <Mock name="<===== RZ icon and title ======>" />
-                <Mock name="login component"  />
-                <button onClick={this.handleClick}>{this.state.signedUser ? 'logout' : 'login'}</button>
-                <div>{this.state.signedUser ? ('hello ' + this.state.signedUser.email) : 'Please log in'}</div>
-                <div className='loginButton'></div>
-                <Mock name="Links" />
-                <Mock name="===============================" />
             </div>
         );
     }
@@ -459,17 +430,6 @@ class ManagementScreen extends React.Component {
 }
 
 
-class Mock extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div className='mock'>{this.props.name}</div>
-        )
-    }
-}
 
 
 class NamedField extends React.Component {
@@ -765,28 +725,36 @@ class GroupsScreen extends React.Component {
 }
 
 
-
-
-(function() {
-
-    ReactDOM.render(
-        <Provider store={store} >
+class App extends React.Component {
+    render() {
+        return (
             <div>
                 <Header />
-                <Router history={hashHistory}>
-                    <Route path="/" component={MainScreen} />
+                    <Route exact path="/" component={MainScreen} />
                     <Route path="/weight" component={WeightScreen} />
                     <Route path="/meeting" component={WeightPresentationScreen} />
                     <Route path="/management" component={ManagementScreen} />
                     <Route path="/users" component={UsersScreen} />
                     <Route path="/groups" component={GroupsScreen} />
                     <Route path="/login" component={LoginScreen}/>
-                </Router>
                 <Footer />
             </div>
-        </Provider>,
-    document.getElementById('root')
-    )
+        )
+    }
+}
 
+
+(function() {
+
+    ReactDOM.render(
+        <Provider store={store} >            
+            <Router>
+                <App />
+            </Router>
+        </Provider>,
+    document.getElementById('root') 
+    )
 })();
 
+
+//                

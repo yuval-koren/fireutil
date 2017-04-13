@@ -1,7 +1,12 @@
 module.exports = {
     entry: './app.js',
     devtool: 'source-map',
-    devServer: { contentBase: '.', host:'localhost', port: 3000},
+    devServer: { 
+        contentBase: '.', 
+        host:'localhost', 
+        port: 3000,
+        historyApiFallback: true
+    },
     output: {
         path: __dirname+'/bin',
         filename: 'bundle.js'

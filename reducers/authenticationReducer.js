@@ -1,20 +1,23 @@
 
 
-
-
 const reducer = (state, action) => {
     switch (action.type) {
         case 'login':
-            break;
+            return Object.assign({}, state, {
+                signedUser: action.signedUser
+            })
 
         case 'logout':
-            break;
+            return Object.assign({}, state, {
+                signedUser: undefined
+            })
 
         default:
-            return {};
+            return {
+                signedUser: undefined
+            };
     }
     return state;
 }
-
 
 export default reducer;
