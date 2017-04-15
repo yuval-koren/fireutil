@@ -21,25 +21,8 @@ import { Provider, connect } from 'react-redux';
 import store from './reducers/store';
 import Header from './components/header';
 import Mock from './components/mock';
-
-
-document.write("It works -> ");
-document.write(greeter.greet("yuval"));
-
-
-class Footer extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div>
-                <Mock name="<===== FOOTER =====>" />
-            </div>
-        );
-    }
-}
+import Footer from './components/footer'
+import WeightForm from './components/weight_form'
 
 
 class MainScreen extends React.Component {
@@ -731,7 +714,7 @@ class App extends React.Component {
             <div>
                 <Header />
                     <Route exact path="/" component={MainScreen} />
-                    <Route path="/weight" component={WeightScreen} />
+                    <Route path="/weight" component={WeightForm} />
                     <Route path="/meeting" component={WeightPresentationScreen} />
                     <Route path="/management" component={ManagementScreen} />
                     <Route path="/users" component={UsersScreen} />

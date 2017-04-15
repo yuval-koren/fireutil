@@ -9,6 +9,7 @@ import metadata from './metadata';
 import dbconfig from './dbconfig';
 import firebaseui from 'firebaseui';
 import store from '../reducers/store'
+import firebase_db from './firebaseApp'
 
 export class FireBaseUtils {
     constructor(config) {
@@ -18,8 +19,7 @@ export class FireBaseUtils {
         this.listRegisters = {};
         this.singleRegisters = {};
       
-        firebase.initializeApp(config);
-        this.db = firebase.database();
+        this.db = firebase_db;
 
         this.initAndRegisterAuthenticationChanges();
 
@@ -229,8 +229,11 @@ export class FireBaseUtils {
             if (user) {
                 store.dispatch({
                     type: 'login',
-                    signedUser: user,
+                    payload: user,
                 });
+                if (!store.getState().current.group) {
+                    //todo: go to pick group screen
+                }
                 //this.userState = user;
                 //_.forEach(this.componentsToRefresh, (comp)=>{
                 //    comp.setState({signedUser: user});

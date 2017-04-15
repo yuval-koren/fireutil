@@ -52,6 +52,11 @@ class Header extends React.Component {
                                     {this.props.signedUser ? 'logout' : 'login'}
                                 </button>
                             </li>
+                            <li className="active">
+                                <p className="navbar-text">
+                                    {this.props.group ? (this.props.groups[this.props.group].name) : ''}
+                                </p>
+                            </li>                            
                         </ul>
                     </div>
                 </div>
@@ -62,9 +67,11 @@ class Header extends React.Component {
     }
 }
 
-const mapStateToProps = ({signedUser}) => {
+const mapStateToProps = ({current, groups}) => {
     return {
-        signedUser: signedUser
+        signedUser: current.signedUser,
+        group: current.group,
+        groups: groups,
     }
 };
 
