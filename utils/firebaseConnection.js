@@ -10,43 +10,54 @@ import dbconfig from './dbconfig';
 import firebaseui from 'firebaseui';
 import store from '../reducers/store'
 import firebase_db from './firebaseApp'
+import actions from '../reducers/actionCreator'
 
 class FirebaseConnection {
     constructor() {
         
         this.db = firebase_db;
-        
-        this.db.ref('managers').on('child_added', (data) => {   
-            store.dispatch({type: 'SET_MANAGER', payload: Object.assign(data.val(), {key:data.key})});
-        });
 
-        this.db.ref('groups').on('child_added', (data) => {   
-            store.dispatch({type: 'SET_GROUP', payload: Object.assign(data.val(), {key:data.key})});
-        });
+        this.dispatchOnChildCreated('groups', actions.addGroup);
+        this.dispatchOnChildCreated('managers', actions.addManager);
 
+        this.regs = [];
     }
 
     registerToGroup = (group)=> {
 
-        if (this.usersEventOff) {
-            this.db.ref('users').off('child_added', this.usersEventOff);
-        }
+        this.regs.forEach((item)=> {
+            item.ref.off('child_added', item.off);
+        })
 
-        if (this.weightsEventOff) {
-            this.db.ref('weights').off('child_added', this.weightsEventOff);
-        }
+        this.regs = [];
 
-        this.usersEventOff = this.db.ref('users').on('child_added', (data) => {   
-            store.dispatch({type: 'SET_USER', payload: Object.assign(data.val(), {key:data.key})})
-        });
+        this.regs.push(this.dispatchOnChildCreated(group+'/users', actions.addUser));
+        this.regs.push(this.dispatchOnChildCreated(group+'/weights', actions.addWeight));
 
-        this.weightsEventOff = this.db.ref('weights').on('child_added', (data) => {   
-            store.dispatch({type: 'SET_WEIGHT', payload: Object.assign(data.val(), {key:data.key})})
-        });
+    }
         
+    saveWeight = (group, week, userId, weight, status) => {
+        var newKey = "week:"+week+",user:"+userId;
+        this.db.ref(group+'/weights/'+newKey).set({
+            key: newKey,
+            nameKey: userId,
+            week: week,
+            weight: weight,
+            status: status,
+        });
+
+    }
+    
+    dispatchOnChildCreated = (path, action)=> {
+        let storage = {};
+        storage.ref = this.db.ref(path);
+        storage.off = storage.ref.on('child_added', (data) => {   
+            let payload = {...data.val(), key:data.key}
+            store.dispatch(action(payload));
+        });
+
+        return storage;
     }
 }
 
-const firebaseConnection = new FirebaseConnection();
-
-export default firebaseConnection;
+export let firebaseConnection = new FirebaseConnection();

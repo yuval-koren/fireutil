@@ -10,6 +10,7 @@ import dbconfig from './dbconfig';
 import firebaseui from 'firebaseui';
 import store from '../reducers/store'
 import firebase_db from './firebaseApp'
+import actions from '../reducers/actionCreator'
 
 export class FireBaseUtils {
     constructor(config) {
@@ -227,26 +228,9 @@ export class FireBaseUtils {
         this.userState = undefined;
         firebase.auth().onAuthStateChanged((user)=>{
             if (user) {
-                store.dispatch({
-                    type: 'login',
-                    payload: user,
-                });
-                if (!store.getState().current.group) {
-                    //todo: go to pick group screen
-                }
-                //this.userState = user;
-                //_.forEach(this.componentsToRefresh, (comp)=>{
-                //    comp.setState({signedUser: user});
-                //})
+                store.dispatch(actions.login(user));
             } else {
-                store.dispatch({
-                    type: 'logout',
-                });
-                
-                //this.userState = undefined;
-                //_.forEach(this.componentsToRefresh, (comp)=>{
-                //    comp.setState({signedUser: undefined});
-                //})
+                store.dispatch(actions.logout());
             }
         })
 

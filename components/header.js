@@ -9,6 +9,8 @@ import uiConfig from '../utils/authuiconfig';
 import { connect } from 'react-redux';
 import Mock from './mock' 
 import { Link, Route, withRouter } from 'react-router-dom'
+import store from '../reducers/store'
+import actions from '../reducers/actionCreator'
 
 class Header extends React.Component {
     constructor(props) {
@@ -52,26 +54,31 @@ class Header extends React.Component {
                                     {this.props.signedUser ? 'logout' : 'login'}
                                 </button>
                             </li>
-                            <li className="active">
-                                <p className="navbar-text">
-                                    {this.props.group ? (this.props.groups[this.props.group].name) : ''}
-                                </p>
-                            </li>                            
+                            {this.props.signedUser && this.props.managers[this.props.signedUser.uid] && (
+                                <li className="active">
+                                    <select value={this.props.group} onChange={(event)=>store.dispatch(actions.setCurrentGroup(event.target.value))} className="navbar-text">
+                                        {this.props.managers[this.props.signedUser.uid].map((item)=>(
+                                            <option key={item} value={item}>{this.props.groups[item].name}</option>
+                                        ))}
+                                    </select>
+                                </li>                            
+                            )}
                         </ul>
                     </div>
                 </div>
             </nav>
-                            <div className='loginButton'></div>
+            <div className="loginButton"></div>
             </div>            
         );
     }
 }
 
-const mapStateToProps = ({current, groups}) => {
+const mapStateToProps = ({current, groups, managers}) => {
     return {
         signedUser: current.signedUser,
         group: current.group,
         groups: groups,
+        managers: managers, 
     }
 };
 
