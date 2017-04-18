@@ -139,4 +139,9 @@ actions.submitWeight = (status) => (dispatch, getState) => {
     firebaseConnection.saveWeight(current.group, current.week, current.user, current.weight, status);
 }
 
+actions.saveUser = (group, key, name, phone) => (dispatch, getState) => {
+    firebaseConnection.saveUser(group, key, name, phone);
+}
+
+
 export default actions;

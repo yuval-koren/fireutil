@@ -20,6 +20,7 @@ import uiConfig from './utils/authuiconfig';
 import { Provider, connect } from 'react-redux';
 import store from './reducers/store';
 import Header from './components/header';
+import Users from './components/users'
 import Mock from './components/mock';
 import Footer from './components/footer'
 import WeightForm from './components/weight_form'
@@ -717,7 +718,7 @@ class App extends React.Component {
                     <Route path="/weight" component={WeightForm} />
                     <Route path="/meeting" component={WeightPresentationScreen} />
                     <Route path="/management" component={ManagementScreen} />
-                    <Route path="/users" component={UsersScreen} />
+                    <Route path="/users" component={Users} />
                     <Route path="/groups" component={GroupsScreen} />
                     <Route path="/login" component={LoginScreen}/>
                 <Footer />

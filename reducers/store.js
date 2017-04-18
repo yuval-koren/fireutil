@@ -7,6 +7,7 @@ const state = {
         signedUser: undefined,
         week: 0,
         weight: 0,
+        group: undefined,
     },
     users: [],
     weights: [],

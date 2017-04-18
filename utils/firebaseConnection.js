@@ -31,9 +31,12 @@ class FirebaseConnection {
 
         this.regs = [];
 
-        this.regs.push(this.dispatchOnChildCreated(group+'/users', actions.addUser));
-        this.regs.push(this.dispatchOnChildCreated(group+'/weights', actions.addWeight));
-
+        this.regs.push(
+            this.dispatchOnChildCreated(group+'/users', actions.addUser),
+            this.dispatchOnChildChange(group+'/users', actions.addUser),
+            this.dispatchOnChildCreated(group+'/weights', actions.addWeight),
+            this.dispatchOnChildChange(group+'/weights', actions.addWeight)
+        );
     }
         
     saveWeight = (group, week, userId, weight, status) => {
@@ -48,10 +51,34 @@ class FirebaseConnection {
 
     }
     
+    saveUser = (group, key, name, phone) => {
+        let newKey = key;
+        if (newKey===undefined || newKey==='') {
+            newKey = this.db.ref().child(group+'/users').push().key;
+        }
+        this.db.ref(group+'/users/'+newKey).set({
+            key: newKey,
+            name: name,
+            phone: phone,
+        });
+
+    }
+
     dispatchOnChildCreated = (path, action)=> {
         let storage = {};
         storage.ref = this.db.ref(path);
         storage.off = storage.ref.on('child_added', (data) => {   
+            let payload = {...data.val(), key:data.key}
+            store.dispatch(action(payload));
+        });
+
+        return storage;
+    }
+
+    dispatchOnChildChange = (path, action)=> {
+        let storage = {};
+        storage.ref = this.db.ref(path);
+        storage.off = storage.ref.on('child_changed', (data) => {   
             let payload = {...data.val(), key:data.key}
             store.dispatch(action(payload));
         });
