@@ -17,13 +17,13 @@ actions.login = (user) => (dispatch, getState) => {
     });
 }
 
-
+// groupData = {key: [userKey], groupKey: {...groupKeys}}
 actions.addManager = (groupData) => (dispatch, getState) => {
     let state = getState();
     let isThisGroupBelongToLoggedinUserWithNoGroup = !state.current.group && state.current.signedUser && groupData.key === state.current.signedUser.uid;
 
     if (isThisGroupBelongToLoggedinUserWithNoGroup) {
-        dispatch(actions.setCurrentGroup(groupData.groupKey[0]))
+        dispatch(actions.setCurrentGroup(Object.keys(groupData.groupKey)[0]))
     }
 
     dispatch({
@@ -141,6 +141,15 @@ actions.submitWeight = (status) => (dispatch, getState) => {
 
 actions.saveUser = (group, key, name, phone) => (dispatch, getState) => {
     firebaseConnection.saveUser(group, key, name, phone);
+}
+
+actions.saveGroup = (key, name, date, hour) => (dispatch, getState) => {
+    firebaseConnection.saveGroup(key, name, date, hour);
+}
+
+actions.saveGroupAndAddToManager = (user, groupKey, name, date, hour) => (dispatch, getState) => {
+    firebaseConnection.saveGroupAndAddToManager(user, groupKey, name, date, hour);
+  
 }
 
 

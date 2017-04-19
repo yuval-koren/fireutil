@@ -64,6 +64,30 @@ class FirebaseConnection {
 
     }
 
+    saveGroup = (key, name, date, hour) => {
+        let newKey = key;
+        if (newKey===undefined || newKey==='') {
+            newKey = this.db.ref().child('/groups').push().key;
+        }
+        this.db.ref('groups/'+newKey).set({
+            key: newKey,
+            name: name,
+            date: date,
+            time: hour,
+        });
+
+        return newKey;
+    }
+
+    saveGroupAndAddToManager = (user, groupKey, name, date, hour) => {
+        let newKey = this.saveGroup(groupKey, name, date, hour);
+        this.db.ref('managers/'+user+'/groupKey/'+newKey).set(true);
+    }
+
+    addGroupToManager = (manager, group) => {
+          this.db.ref('managers/'+manager+'/groupKey/'+group).set({});
+    }
+
     dispatchOnChildCreated = (path, action)=> {
         let storage = {};
         storage.ref = this.db.ref(path);

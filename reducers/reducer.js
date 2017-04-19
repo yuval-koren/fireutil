@@ -109,24 +109,14 @@ const reducer = (state, action) => {
             }
 
         case 'ADD_MANAGER':
-            let newState = state;
-            let isThisGroupBelongToLoggedinUserWithNoGroup = !state.current.group && state.current.signedUser && action.payload.key === state.current.signedUser.uid;
-
-            if (isThisGroupBelongToLoggedinUserWithNoGroup) {
-                newState = {
-                    ...state,
-                    current: {
-                        ...state.current,
-                        group: action.payload.groupKey[0]
-                    }
-                }
-            }
-
             return {
-                ...newState,
+                ...state,
                 managers: {
-                    ...newState.managers,
-                    [action.payload.key]: [...(newState.managers[action.payload.key] || []), ...action.payload.groupKey]
+                    ...state.managers,
+                    [action.payload.key]: {
+                        ...state.managers[action.payload.key],
+                        ...action.payload.groupKey
+                    }
                 }
             }
 

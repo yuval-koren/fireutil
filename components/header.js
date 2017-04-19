@@ -57,7 +57,7 @@ class Header extends React.Component {
                             {this.props.signedUser && this.props.managers[this.props.signedUser.uid] && (
                                 <li className="active">
                                     <select value={this.props.group} onChange={(event)=>store.dispatch(actions.setCurrentGroup(event.target.value))} className="navbar-text">
-                                        {this.props.managers[this.props.signedUser.uid].map((item)=>(
+                                        {Object.keys(this.props.managers[this.props.signedUser.uid]).map((item)=>(
                                             <option key={item} value={item}>{this.props.groups[item].name}</option>
                                         ))}
                                     </select>
